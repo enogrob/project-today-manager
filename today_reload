@@ -1,0 +1,4 @@
+cp site ~/.site
+pushd .
+source ~/.bashrc
+popd 

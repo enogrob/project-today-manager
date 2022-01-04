@@ -1,0 +1,150 @@
+#!/bin/bash
+## Crafted (c) 2021 by Daitanlabs - We are stronger together
+## Prepared : Roberto Nogueira
+## File     : install
+## Project  : project-site-manager
+## Reference: bash
+## Depends  : todotxt, project-things-today, screen
+## Purpose  : Install site manager.
+
+# set -x
+
+source ./site
+OS=`uname`
+
+site_install(){
+  case $1 in
+    --version|-v|v|version)
+      site_install.version
+      ;;
+    --help|-h|h|help)
+      site_install.help
+      ;;
+    $SITE_INSTALL_METHODS)
+      if [ -z "$1" ]; then
+        if ! test -f $HOME/.site; then
+          echo -e "\033[1;92m==> \033[0m\033[1;39mInstalling \"site manager\" \033[0m"
+          echo ""
+          echo "" >> $HOME/.bashrc
+          echo "# site manager" >> $HOME/.bashrc
+          echo "test -f $HOME/.site && source $HOME/.site" >> $HOME/.bashrc
+        else  
+          echo -e "\033[1;92m==> \033[0m\033[1;39mUpdating \"site manager\" \033[0m"
+          echo ""
+        fi  
+        cp site $HOME/.site
+        source $HOME/.bashrc
+        cowsay $SITE_UPDATE_MESSAGE
+      else  
+        local methods="+($(site_install.methods))"
+        case $1 in
+          $methods)
+            site_install.$1
+            ;;
+          *)
+            printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${3}"
+            ;;  
+        esac
+      fi  
+      ;;
+    *)
+      if [ -z "$1" ]; then
+        site.print
+      else   
+        printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${1}"
+      fi  
+      ;;
+  esac
+}
+site_install.methods(){
+  echo "help|deps|requirements|version"
+}
+site_install.help(){
+  printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2021 by Daitanlabs - We are stronger together"
+  site_install.version
+  printf "\e[1;36m%s \e[0m%s\n" "site_install" "[$(site_install.methods)]"
+  printf "::\n"  
+  printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "https://github.com/enogrob/project-site-manager"
+  printf "\n"
+}      
+site_install.deps(){
+ if ! test -f /usr/local/bin/cowsay && ! test -f /usr/games/cowsay; then
+   echo -e "\033[1;92m==> \033[0m\033[1;39mInstalling \"cowsay\" \033[0m"
+   echo ""
+   if [ "$OS" == 'Darwin' ]; then
+     brew install cowsay
+   else  
+     sudo apt-get install cowsay
+   fi
+ fi
+ 
+ if ! test -f /usr/local/bin/todo.sh && ! test -f /usr/bin/todo.sh; then
+   echo -e "\033[1;92m==> \033[0m\033[1;39mInstalling \"todo.txt-cli\" \033[0m"
+   echo ""
+   if [ "$OS" == 'Darwin' ]; then
+     brew install todo-txt
+     cp -n /usr/local/opt/todo-txt/todo.cfg ~/.todo.cfg
+   else  
+     git clone git@github.com:todotxt/todo.txt-cli.git
+     cd todo.txt-cli
+     make 
+     sudo make install
+     make test
+     cd ..
+     rm -rf todo.txt-cli
+   fi
+ fi
+
+ if ! test -f /usr/bin/screen; then
+   echo -e "\033[1;92m==> \033[0m\033[1;39mInstalling \"screen\" \033[0m"
+   echo ""
+   if [ "$OS" == 'Darwin' ]; then
+     brew install screen
+   else  
+     sudo apt-get install screen
+   fi
+ fi
+
+ if ! test -f /usr/bin/fping; then
+   echo -e "\033[1;92m==> \033[0m\033[1;39mInstalling \"fping\" \033[0m"
+   echo ""
+   if [ "$OS" == 'Darwin' ]; then
+     brew install fping
+   else  
+     sudo apt-get install fping
+   fi
+ fi
+
+ if ! test -f /usr/bin/xclip; then
+   echo -e "\033[1;92m==> \033[0m\033[1;39mInstalling \"xclip\" \033[0m"
+   echo ""
+   if [ "$OS" == 'Darwin' ]; then
+     brew install xclip
+   else  
+     sudo apt-get install xclip
+   fi
+ fi
+}
+site_install.requirements(){
+  if ! test -f /usr/bin/nmcli; then
+    printf " \e[0;31m%s \e[0m%s\n" "=>" "\"nmcli\" is required"
+  fi
+  if ! test -f /usr/bin/globalprotect; then
+    printf " \e[0;31m%s \e[0m%s\n" "=>" "\"globalprotect\" is required"
+  fi
+  if ! test -f /usr/bin/stoken; then
+    printf " \e[0;31m%s \e[0m%s\n" "=>" "\"stoken\" is required"
+  fi
+  if ! test -f /opt/paloaltonetworks/globalprotect/PanGPA; then
+    printf " \e[0;31m%s \e[0m%s\n" "=>" "\"PanGPA\" is required"
+  fi
+  if ! test -f /usr/bin/stoken-gui; then
+    printf " \e[0;31m%s \e[0m%s\n" "=>" "\"stoken-gui\" is required"
+  fi
+}
+site_install.version(){
+  printf "\e[0;37m%s \e[0m%s\n" "Site Install" "$SITE_VERSION"
+  printf "\n"
+}
+
+export SITE_INSTALL_METHODS="+($(site_install.methods))"

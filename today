@@ -1,0 +1,450 @@
+#!/bin/bash
+## Crafted (c) 2021 by Daitanlabs - We are stronger together
+## Prepared : Roberto Nogueira
+## File     : site
+## Project  : project-site-manager
+## Reference: bash
+## Depends  : fping, project-things-today, screen. todotxt, xclip
+## Purpose  : Help to manage ordinary things.
+
+# set -x
+
+export SITE_VERSION=v1.0.07
+export SITE_VERSION_DATE=2021.12.26
+export SITE_UPDATE_MESSAGE="Support for Virtual Box"
+
+# git domains
+domain(){
+  local domain=$(echo $(git config user.email) | awk -F\@ '{print $2}' | awk -F\. '{print $1}')
+  echo $domain
+}
+domain.methods(){ echo "help|daitan|gmail|windriver"; }
+domain.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "domain" "[$(domain.methods)]"; }
+domain.daitan.init(){ daitan_name=$1; daitan_email=$2; }
+domain.daitan(){
+  git config --global user.name $daitan_name
+  git config --global user.email $daitan_email
+}
+domain.windriver.init(){ windriver_name=$1; windriver_email=$2; }
+domain.windriver(){
+  git config --global user.name $windriver_name
+  git config --global user.email $windriver_email
+}
+domain.gmail.init(){ gmail_name=$1; gmail_email=$2; }
+domain.gmail(){
+  git config --global user.name $gmail_name
+  git config --global user.email $gmail_email
+}
+
+# vpns
+
+daitan(){
+  daitan.on
+}
+daitan.init(){ daitan_url=$1; }
+daitan.methods(){ echo "help|off|on|off|ping|status|url"; }
+daitan.help(){ printf "\e[1;37m%s    \e[0m \e[1;36m%s\e[0m\n" "daitan" "[$(daitan.methods)]"; }
+daitan.off(){ nmcli connection down Daitan &>/dev/null; }
+daitan.on(){ nmcli connection up Daitan &>/dev/null; }
+daitan.ping(){ printf "    $(servers.ping $daitan_url daitan)\n"; }
+daitan.status(){ nmcli connection show | grep Daitan; }
+daitan.url(){ echo $daitan_url; }
+
+windriver(){
+  windriver.on
+}
+windriver.init(){ windriver_url=$1; }
+windriver.methods(){ echo "help|gateways|off|on|off|ping|start|status|stoken|url"; }
+windriver.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "windriver" "[$(windriver.methods)]"; }
+windriver.loop(){
+  old_tty=$(stty --save)
+  while true ; do
+    if read -t 0; then 
+        read -n 1 char
+        break
+    else 
+        servers.ping $windriver_url 
+        sleep 1
+    fi       
+  done
+  stty $old_tty
+}
+windriver.gateways(){ globalprotect show --manual-gateway; }
+windriver.off(){ globalprotect disconnect; }
+windriver.on(){
+  password=$(echo $STOKENPASS | stoken | sed 's/[^0-9]*//g')
+  echo $password | xclip -selection clipboard
+  globalprotect connect -p wr.alameda.windriver.com
+  globalprotect connect -p wr.alameda.windriver.com -g list
+  vpns.fixroute
+}
+windriver.ping(){ printf "    $(servers.ping $windriver_url windriver)\n"; }
+windriver.start(){ /opt/paloaltonetworks/globalprotect/PanGPA start& }
+windriver.status(){ globalprotect show --status; }
+windriver.stoken(){ stoken-gui& }
+windriver.url(){ echo $windriver_url; }
+
+vpns(){
+  printf "  $(servers.ping $(daitan.url) daitan), $(servers.ping $(windriver.url) windriver)\n"  
+}
+vpns.init(){ vpns_print=$1; }
+vpns.init.fixroute(){ 
+  local host=$1 
+  local fixroute=$2; 
+  if [ "$host" = "$(desktop.hostname)" ];then
+    desktop_fixroute=$fixroute
+  else 
+    localhost_fixroute=$fixroute
+  fi
+}
+vpns.methods(){ echo "fixroute|help|print"; }
+vpns.fixroute(){
+  if [ "$(hostname)" != "$(desktop.hostname)" ];then
+    eval $localhost_fixroute
+  else
+    eval $desktop_fixroute
+  fi 
+} 
+vpns.help(){ printf "\e[1;37m%s      \e[0m \e[1;36m%s\e[0m\n" "vpns" "[$(vpns.methods)]"; }
+vpns.print(){
+  if [ "$vpns_print" = "true" ]; then
+    echo -e "vpns:"
+    vpns
+  fi  
+}
+
+# servers
+daitanwr(){ 
+  servers.handler 
+}
+daitanwr.init(){ daitanwr_user=$1; daitanwr_ip=$2; daitanwr_hostname=$3; }
+daitanwr.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "daitanwr" "[$(daitanwr.methods)]"; }
+daitanwr.hostname(){ echo $daitanwr_hostname; }
+daitanwr.ip(){ echo $daitanwr_ip; }
+daitanwr.methods(){ echo "help|hostname|ip|methods|ping|user"; }
+daitanwr.ping(){ printf "    $(servers.ping $(daitanwr.ip) daitanwr)\n"; }
+daitanwr.user(){ echo $daitanwr_user; }
+
+desktop(){ 
+  servers.handler 
+}
+desktop.init(){ desktop_user=$1; desktop_ip=$2; desktop_hostname=$3; }
+desktop.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "desktop" "[$(desktop.methods)]"; }
+desktop.hostname(){ echo $desktop_hostname; }
+desktop.ip(){ echo $desktop_ip; }
+desktop.methods(){ echo "help|hostname|ip|methods|ping|user"; }
+desktop.ping(){ printf "    $(servers.ping $(desktop.ip) desktop)\n"; }
+desktop.user(){ echo $desktop_user; }
+
+cgts1(){ 
+  servers.handler 
+}
+cgts1.init(){ cgts1_user=$1; cgts1_ip=$2; cgts1_hostname=$3; }
+cgts1.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "cgts1" "[$(cgts1.methods)]"; }
+cgts1.hostname(){ echo $cgts1_hostname; }
+cgts1.ip(){ echo $cgts1_ip; }
+cgts1.methods(){ echo "help|hostname|ip|methods|ping|user"; }
+cgts1.ping(){ printf "    $(servers.ping $(cgts1.ip) cgts1)\n"; }
+cgts1.user(){ echo $cgts1_user; }
+
+cgts2(){ 
+  servers.handler 
+}
+cgts2.init(){ cgts2_user=$1; cgts2_ip=$2; cgts2_hostname=$3; }
+cgts2.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "cgts2" "[$(cgts2.methods)]"; }
+cgts2.hostname(){ echo $cgts2_hostname; }
+cgts2.ip(){ echo $cgts2_ip; }
+cgts2.methods(){ echo "help|hostname|ip|methods|ping|user"; }
+cgts2.ping(){ printf "    $(servers.ping $(cgts2.ip) cgts2)\n"; }
+cgts2.user(){ echo $cgts2_user; }
+
+cgts3(){ 
+  servers.handler 
+}
+cgts3.init(){ cgts3_user=$1; cgts3_ip=$2; cgts3_hostname=$3; }
+cgts3.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "cgts3" "[$(cgts3.methods)]"; }
+cgts3.hostname(){ echo $cgts3_hostname; }
+cgts3.ip(){ echo $cgts3_ip; }
+cgts3.methods(){ echo "help|hostname|ip|methods|ping|user"; }
+cgts3.ping(){ printf "    $(servers.ping $(cgts3.ip) cgts3)\n"; }
+cgts3.user(){ echo $cgts3_user; }
+
+cgts4(){ 
+  servers.handler 
+}
+cgts4.init(){ cgts4_user=$1; cgts4_ip=$2; cgts4_hostname=$3; }
+cgts4.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "cgts4" "[$(cgts4.methods)]"; }
+cgts4.hostname(){ echo $cgts3_hostname; }
+cgts4.ip(){ echo $cgts4_ip; }
+cgts4.methods(){ echo "help|hostname|ip|methods|ping|user"; }
+cgts4.ping(){ printf "    $(servers.ping $(cgts4.ip) cgts4)\n"; }
+cgts4.user(){ echo $cgts4_user; }
+
+servers(){
+  printf "  $(servers.ping $(cgts1.ip) cgts1), $(servers.ping $(cgts2.ip) cgts2), $(servers.ping $(cgts3.ip) cgts3), $(servers.ping $(cgts4.ip) cgts4)\n"  
+  if [ "$(hostname)" != "$(desktop.hostname)" ];then
+    printf "  $(servers.ping $(desktop.ip) desktop)\n"  
+  else
+    printf "  $(servers.ping $(daitanwr.ip) daitanwr)\n"  
+  fi 
+}
+servers.init(){ servers_print=$1; }
+servers.methods(){ echo "help|print"; }
+servers.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "servers" "[$(servers.methods)]"; }
+servers.handler(){
+  local server=${FUNCNAME[1]}
+  local user=${server}_user
+  local ip=${server}_ip
+  local method=$1
+  local methods="+($(${server}.methods))"
+  if [ -z "$1" ]; then    
+      ssh -t ${!user}@${!ip} 'unset TMOUT; printf "\n"; bash'
+  else    
+    case ${method} in
+      $methods)
+        ${server}.${method} ${@:2}
+        ;;
+      *)
+        printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${method}"
+        ;;  
+    esac
+  fi  
+}  
+servers.ping(){
+  local url=$1
+  local name=$2
+  fping -C 1 $url &>/dev/null
+  if [ $? -eq 0 ]; then 
+      if [ ! -z "$name" ]; then
+        printf "\e[0;32m%s\e[0m" $name
+      else
+        printf "\e[0;32m%s\e[0m" "."
+      fi
+  else
+      if [ ! -z "$name" ]; then
+        printf "\e[0;31m%s\e[0m" $name
+      else
+        printf "\e[0;31m%s\e[0m" "."
+      fi
+  fi
+} 
+servers.print(){
+  if [ "$servers_print" = "true" ]; then
+    echo -e "servers:"
+    servers
+  fi
+}
+
+# vms
+vms(){
+  vms_list=(`vboxmanage list vms --sorted | sed 's/"//g'`)
+  for v in $vms_list;
+  do
+    if ! test -z $vm_name; then
+      echo -e "$v" | grep "$vm_name" &> /dev/null
+      if [ $? == 0 ];then 
+        printf "\e[0;32m  %s\e[0m\n" $v
+      else
+        printf "\e[0;31m  %s\e[0m\n" $v
+      fi 
+    else
+        printf "\e[0;31m  %s\e[0m\n" $v
+    fi 
+  done
+}
+vms.init(){ vms_print=$1; }
+vms.methods(){ echo "headless|halt|help|control|ls|print|snapshot|ssh|ssh-copy-id|status|suspend|up"; }
+vms.control(){
+  vm_name=$1
+  local vm_first
+  if ! test -z "$1"; then
+    vboxmanage showvminfo ${vm_name} &> /dev/null
+    if test $? -eq 0; then
+      vm_name=$1
+      echo ${vm_name} 
+    fi
+  else
+    if ! test -z "${vm_name}"; then 
+      echo ${vm_name} 
+    else
+      vm_first=$(vboxmanage list vms --sorted | head -1 | awk '{print $1}' | sed 's/"//g')
+      if ! test -z "${vm_first}"; then
+        vm_name=$vm_first
+        echo $vm_name
+      fi
+    fi
+  fi  
+}
+vms.halt(){ vboxmanage controlvm ${vm_name} poweroff; }
+vms.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "vms" "[$(vms.methods)]"; }
+vms.headless(){ vboxmanage startvm ${vm_name} --type headless; }
+vms.ls(){ 
+  local method=$1
+  local methods="+($(vms.ls.methods))"
+  if [ -z "$method" ]; then    
+      vms
+  else    
+    case ${method} in
+      $methods)
+        vboxmanage list ${method} ${@:2}
+        ;;
+      *)
+        printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${method}"
+        ;;  
+    esac
+  fi  
+}
+vms.ls.methods(){ echo "vms|runningvms|ostypes|hostdvds|hostfloppies|intnets|bridgedifs|hostonlyifs|natnets|dhcpservers|hostinfo|hostcpuids|hddbackends|hdds|dvds|floppies|usbhost|usbfilters|systemproperties|extpacks|groups|webcams|screenshotformats"; }
+vms.ls.running(){ vms.ls runningvms; }
+vms.print(){
+  if [ "$vms_print" = "true" ]; then
+    if ! test -z "$(which vboxmanage)" && ! test -z "$(vboxmanage list vms)"; then
+        echo -e "vms:"
+        vms
+    fi
+  fi
+}
+vms.snapshot(){ vboxmanage snapshot ${vm_name} list; }
+vms.snapshot.take(){ vboxmanage snapshot ${vm_name} take $1; }
+vms.snapshot.restore(){ vboxmanage snapshot ${vm_name} restore $1; }
+vms.ssh(){ ssh -p 3022 root@localhost; }
+vms.ssh.copy-id(){ ssh-copy-id -p 3022 root@localhost; }
+vms.status(){ vboxmanage showvminfo ${vm_name} | grep -e "State:" | sed 's/^State://'| sed -e 's/^[ \t]*//'; }
+vms.suspend(){ vboxmanage controlvm ${vm_name} savestate; }
+vms.up(){ vboxmanage startvm ${vm_name}; }
+
+# screens
+screens(){
+  screen -ls | sed -e 's/^[ \t]*//' | sed 's/^/  /' | grep "Attached\|Detached"  
+}
+screens.methods(){ echo "help|inside|print"; }
+screens.help(){ printf "\e[1;37m%s  \e[0m \e[1;36m%s\e[0m\n" "screens" "[$(screens.methods)]"; }
+screens.inside(){
+  if [ ! -z "$STY" ];then
+   printf "(\e[1;32mAttached\e[0m)\n" 
+  else
+   printf "(\e[1;31mDettached\e[0m)\n" 
+  fi
+}
+screens.print(){
+  screen -ls | grep 'No Sockets found in' &> /dev/null
+  if [ ! $? == 0 ];then 
+    echo -e "screens:"
+    screens
+  fi
+}
+
+#projects
+projects(){
+  tl | sort | sed 's/^/  /' | grep -v "TODO:" | grep -v "\-\-"
+}
+projects.init(){ projects_print=$1; }
+projects.methods(){ echo "help|ls|print"; }
+projects.help(){ printf "\e[1;37m%s \e[0m \e[1;36m%s\e[0m\n" "projects" "[$(projects.methods)]"; }
+projects.ls(){ tdpl; }
+projects.print(){
+  if [ "$projects_print" = "true" ]; then
+    tl | grep 'TODO: 0 of 0 tasks shown' &> /dev/null
+    if [ ! $? == 0 ];then 
+      echo -e "projects:"
+      projects
+    fi
+  fi
+}
+
+# site
+site(){
+  local site_methods="+($(site.methods))"
+  local param_methods="+($(! test -z "$1" && $1.methods))"
+  case $1 in
+    --version|-v|v|version)
+      site.version
+      ;;
+    --help|-h|h|help)
+      printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2021 by Daitanlabs - We are stronger together"
+      site.version
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(site.help)]" 
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(domain.help)]"
+      printf "\n"  
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(vpns.help)]"
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(daitan.help)]"
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(windriver.help)]"
+      printf "\n"  
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(servers.help)]"
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[cgts1~4  [$(cgts1.methods)]]"
+      if [ "$(hostname)" != "$(desktop.hostname)" ];then
+        printf "\e[1;37m%s \e[0m%s\n" "site" "[$(daitanwr.help)]"
+      else
+        printf "\e[1;37m%s \e[0m%s\n" "site" "[$(desktop.help)]"
+      fi  
+      printf "\n"  
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(vms.help)]"
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(screens.help)]"
+      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(projects.help)]"
+      printf "::\n"  
+      printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "http://bitbucket.wrs.com/users/rmartins/repos/project-site-manager"
+      printf "\n"
+      ;;
+    $site_methods)
+      if [ -z "$2" ]; then
+        $1 
+      else  
+        case $2 in
+          $param_methods)
+            $1.$2 ${@:3}
+            ;;
+          *)
+            printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${2}"
+            ;;  
+        esac
+      fi  
+      ;;
+    *)
+      if [ -z "$1" ]; then
+        site.print
+      else   
+        printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${1}"
+      fi  
+      ;;
+  esac
+}
+site.methods(){ echo "help|daitan|desktop|domain|print|projects|servers|screens|cgts1|cgts2|cgts3|cgts4|vms|vpns|windriver"; }
+site.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "site" "[$(site.methods)]"; }
+site.print(){
+  echo -e "site: \e[4m\e[1;37m$USER@$(hostname)\e[0m\e[0m" 
+  printf "\e[0;34m%s \e[0m%s\n" "  git domain" $(domain) 
+  vpns.print
+  servers.print
+  screens.print
+  vms.print
+  projects.print
+  printf ""  
+}
+site.version(){
+  printf "\e[0;37m%s \e[0m%s\n" "Site" "$SITE_VERSION"
+  printf "\n"
+}
+
+domain.daitan.init "Roberto Nogueira" "rnogueira@daitan.com"
+domain.windriver.init "Roberto Luiz Martins Nogueira" "robertoluiz.martinsnogueira@windriver.com" 
+domain.gmail.init "Roberto Nogueira" "enogrob@gmail.com" 
+
+daitan.init horas.daitangroup.com
+windriver.init confluence.wrs.com
+
+vpns.init true
+servers.init true
+vms.init true
+projects.init $(test -f $HOME/.todo/todo.sh && echo true)
+
+daitanwr.init rmartins 10.127.140.222 daitan-wr-build-server
+desktop.init rmartins 10.127.130.13 BRCPQD0026
+
+cgts1.init rmartins 128.224.145.95  yow-cgts1-lx 
+cgts2.init rmartins 128.224.145.117 yow-cgts2-lx 
+cgts3.init rmartins 128.224.145.134 yow-cgts3-lx 
+cgts4.init rmartins 128.224.145.137 yow-cgts4-lx 
+
+vpns.init.fixroute BRCPQD0026 "sudo ip route change 10.127.20.0/24 via 10.227.130.1 && sudo ip route change 10.127.130.0/24 via 10.227.130.1"
+vpns.init.fixroute brcpqn0753 "sudo ip route del 10.127.130.0/24 via 192.168.15.1; sudo ip route del 10.127.20.0/24 via 192.168.15.1"
+
