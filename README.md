@@ -17,7 +17,7 @@ This is in order to help the working CLI daily activities. It implements the [Ge
 * [Getting Things Done(GTD)](https://www.amazon.com/gp/product/B000WH7PKY) Development Flux and Environment seamlessly integrated.
 * Supports for OSX and Linux.
 * Object-Oriented bash style
-* Supports [**todo.txt-cli**](https://github.com/todotxt/todo.txt-cli).
+* Supports [todo.txt-cli](https://github.com/todotxt/todo.txt-cli).
 
 See example of use below:
 
@@ -44,6 +44,17 @@ Today v1.0.0
 today [today    [end|help|methods|print|start|version]]
 ::
 homepage http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager
+```
+**Installation**
+
+```shell
+pushd /tmp
+git clone git@github.com:enogrob/project-today-manager.git
+source ./project-today-manager/today
+mv project-today-manager ~/Today
+echo "test -f ~/Projects/project-today-manager/today && source ~/Projects/project-today-manager/today" >> ~/.bashrc
+source ~/.bashrc
+popd
 ```
 
 **Changes log**
