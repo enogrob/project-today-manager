@@ -60,17 +60,17 @@ inbox.collect(){
   fi
 }
 inbox.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "inbox" "[$(inbox.methods)]"; }
-inbox.list(){ ls -la TODAY_INBOX; }
+inbox.list(){ ls -la $TODAY_INBOX; }
 
 logbook(){ pushd $TODAY_LOGBOOK; }
 logbook.methods(){ echo "help|list"; }
 logbook.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(logbook.methods)]"; }
-logbook.list(){ ls -la TODAY_LOGBOOK; }
+logbook.list(){ ls -la $TODAY_LOGBOOK; }
 
 projects(){ pushd $TODAY_PROJECTS; }
 projects.methods(){ echo "help|list|new"; }
 projects.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "projects" "[$(projects.methods)]"; }
-projects.list(){ ls -la TODAY_PROJECTS; }
+projects.list(){ ls -la $TODAY_PROJECTS; }
 projects.new(){
   local project=$1
 
