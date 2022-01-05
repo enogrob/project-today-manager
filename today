@@ -126,9 +126,9 @@ today(){
   esac
 }
 today.setup(){
-  export TODAY_UPDATE_MESSAGE="Init
+  export TODAY_UPDATE_MESSAGE="Initial version"
   export TODAY_VERSION=v1.0.07
-  export TODAY_VERSION_DATE=2022.01ial version"
+  export TODAY_VERSION_DATE=2022.01.05
   
   export TODAY_THINGS=$HOME/Things
   
