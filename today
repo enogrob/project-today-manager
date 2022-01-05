@@ -18,17 +18,17 @@ _inbox.collect(){
     ls -la $TODAY_INBOX
   fi
 }
-_inbox.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "inbox" "[$(inbox.methods)]"; }
+_inbox.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "inbox" "[$(inbox.methods)]"; }
 _inbox.list(){ ls -la $TODAY_INBOX; }
 
 _logbook(){ cd $TODAY_LOGBOOK; }
 _logbook.methods(){ echo "help|list"; }
-_logbook.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(logbook.methods)]"; }
+_logbook.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(logbook.methods)]"; }
 _logbook.list(){ tree -L 1 $TODAY_LOGBOOK; }
 
 _projects(){ cd $TODAY_PROJECTS; }
 _projects.methods(){ echo "help|list|new"; }
-_projects.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "projects" "[$(projects.methods)]"; }
+_projects.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "projects" "[$(projects.methods)]"; }
 _projects.list(){ ls -la $TODAY_PROJECTS; }
 _projects.new(){
   local project=$1
@@ -42,7 +42,7 @@ _projects.new(){
 
 _scheduled(){ cd $TODAY_SCHEDULED; }
 _scheduled.methods(){ echo "help|list|init|end|today"; }
-_scheduled.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(scheduled.methods)]"; }
+_scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(scheduled.methods)]"; }
 _scheduled.list(){ tree -L 1 $TODAY_SCHEDULED; }
 _scheduled.init(){
   local project=$(basename $(pwd))
@@ -66,7 +66,7 @@ _scheduled.today(){
 
 _someday(){ cd $TODAY_SOMEDAY; }
 _someday.methods(){ echo "help|list|init|end|today"; }
-_someday.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(scheduled.methods)]"; }
+_someday.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(scheduled.methods)]"; }
 _someday.list(){ tree -L 1 $TODAY_SCHEDULED; }
 _someday.init(){
   local project=$(basename $(pwd))
@@ -100,13 +100,12 @@ today(){
       printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2021 by Daitanlabs - We are stronger together"
       today.version
       printf "\e[1;37m%s \e[0m%s\n" "today" "[$(today.help)]" 
-      printf "::\n"  
-      printf "\e[1;37m%s \e[0m%s\n" "inbox" "[$(_inbox.help)]" 
-      printf "\e[1;37m%s \e[0m%s\n" "logbook" "[$(_logbook.help)]" 
-      printf "\e[1;37m%s \e[0m%s\n" "projects" "[$(_projects.help)]" 
-      printf "\e[1;37m%s \e[0m%s\n" "scheduled" "[$(_scheduled.help)]" 
-      printf "\e[1;37m%s \e[0m%s\n" "someday" "[$(_someday.help)]" 
-      printf "::\n"  
+      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_inbox.help)]" 
+      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_logbook.help)]" 
+      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_projects.help)]" 
+      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_scheduled.help)]" 
+      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_someday.help)]" 
+      printf "\n"  
       printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager"
       printf "\n"
       ;;
@@ -185,7 +184,7 @@ today.setup(){
 }
 today.methods(){ echo "help|list|init|end|setup|version"; }
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
-today.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "today" "[$(today.methods)]"; }
+today.help(){ printf "\e[1;37m%s\e[0m\e[1;36m%s\e[0m\n" "" "[$(today.methods)]"; }
 today.list(){ tree -L 1 $TODAY; }
 today.init(){
   local project=$(basename $(pwd))
