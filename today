@@ -99,7 +99,7 @@ today(){
     --help|-h|h|help)
       printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2021 by Daitanlabs - We are stronger together"
       today.version
-      printf "\e[1;37m%s \e[0m%s\n" "today" "[$(today.help)]" 
+      printf "\e[1;37m%s \e[0m%s\n" "today" "$(today.help)" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_inbox.help)]" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_logbook.help)]" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_projects.help)]" 
