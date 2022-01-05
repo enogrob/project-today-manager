@@ -13,16 +13,22 @@ export TODAY_VERSION=v1.0.07
 export TODAY_VERSION_DATE=2022.01.04
 export TODAY_UPDATE_MESSAGE="Initial version"
 
-export TODAY=$HOME/Today
 export TODAY_THINGS=$HOME/Things
 
-export TODAY_INBOX=$HOME/Today/Inbox
-export TODAY_LOGBOOK=$HOME/Today/Logbook
-export TODAY_PROJECTS=$HOME/Today/Projects
-export TODAY_SCHEDULED=$HOME/Today/Scheduled
-export TODAY_SOMEDAY=$HOME/Today/Someday
+export TODAY_INBOX=$TODAY_THINGS/Inbox
+export TODAY_LOGBOOK=$TODAY_THINGS/Logbook
+export TODAY_PROJECTS=$TODAY_THINGS/Projects
+export TODAY_SCHEDULED=$TODAY_THINGS/Scheduled
+export TODAY_SOMEDAY=$TODAY_THINGS/Someday
+export TODAY=$TODAY_THINGS/Today
 
-# site
+inbox(){ pushd $TODAY_INBOX; }
+logbook(){ pushd $TODAY_LOGBOOK; }
+projects(){ pushd $TODAY_PROJECTS; }
+scheduled(){ pushd $TODAY_SCHEDULED; }
+someday(){ pushd $TODAY_SOMEDAY; }
+
+# today
 today(){
   local site_methods="+($(today.methods))"
   local param_methods="+($(! test -z "$1" && $1.methods))"
@@ -33,7 +39,7 @@ today(){
     --help|-h|h|help)
       printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2021 by Daitanlabs - We are stronger together"
       site.version
-      printf "\e[1;37m%s \e[0m%s\n" "site" "[$(today.help)]" 
+      printf "\e[1;37m%s \e[0m%s\n" "today" "[$(today.help)]" 
       printf "::\n"  
       printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager"
       printf "\n"
@@ -54,20 +60,53 @@ today(){
       ;;
     *)
       if [ -z "$1" ]; then
-        cd $TODAY
+        pushd $TODAY
       else   
         printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${1}"
       fi  
       ;;
   esac
 }
-today.methods(){ echo "help|print|version"; }
-today.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "site" "[$(today.methods)]"; }
+today.init(){
+  ! test -d $TODAY_THINGS && mkdir -p $TODAY_THINGS
+
+  ! test -d $TODAY_INBOX && mkdir -p $TODAY_INBOX
+  ! test -d $TODAY_LOGBOOK && mkdir -p $TODAY_LOGBOOK
+  ! test -d $TODAY_PROJECTS && mkdir -p $TODAY_PROJECTS
+  ! test -d $TODAY_SCHEDULED && mkdir -p $TODAY_SCHEDULED
+  ! test -d $TODAY_SOMEDAY && mkdir -p $TODAY_SOMEDAY
+  ! test -d $TODAY && mkdir -p $TODAY
+
+  ! test -L $HOME/Inbox && ln -sf $TODAY_INBOX $HOME/Inbox
+  ! test -L $HOME/Logbook && ln -sf $TODAY_LOGBOOK $HOME/Logbook
+  ! test -L $HOME/Projects && ln -sf $TODAY_PROJECTS $HOME/Projects
+  ! test -L $HOME/Someday && ln -sf $TODAY_SOMEDAY $HOME/Someday
+  ! test -L $HOME/Scheduled && ln -sf $TODAY_SCHEDULED $HOME/Scheduled
+  ! test -L $HOME/Today && ln -sf $TODAY $HOME/Today
+}
+today.methods(){ echo "end|help|list|print|start|version"; }
+today.end(){
+  local project=$(basename $(pwd))
+  if test -L $TODAY/$project;
+    ln -sf $(readlink -f $TODAY/$project) $TODAY_LOGBOOK/$project
+    rm $TODAY/$project
+  fi
+}
+today.help(){ printf "\e[1;37m%s   \e[0m \e[1;36m%s\e[0m\n" "today" "[$(today.methods)]"; }
+today.list(){ tree -L 1 $TODAY; }
 today.print(){
   echo -e "today: \e[4m\e[1;37m$USER@$(hostname)\e[0m\e[0m" 
   printf ""  
 }
+today.start(){
+  local project=$(basename $(pwd))
+  if test -d $TODAY_PROJECTS/$project;
+    ln -sf $TODAY_PROJECTS/$project $TODAY/$project
+  fi
+}
 today.version(){
-  printf "\e[0;37m%s \e[0m%s\n" "Site" "$TODAY_VERSION"
+  printf "\e[0;37m%s \e[0m%s\n" "Today" "$TODAY_VERSION"
   printf "\n"
 }
+
+today.init
