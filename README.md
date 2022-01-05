@@ -41,7 +41,7 @@ In order to install `Today Manager`, it is required that the following has been 
 Crafted (c) 2021 by Daitanlabs - We are stronger together 
 Today v1.0.07
 
-today [[help|list|init|end|setup|version]]
+today [help|list|init|end|setup|version]
       [inbox [collect|help|list]]
       [logbook [help|list]]
       [projects [help|ls|print]]
