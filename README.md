@@ -14,7 +14,7 @@ This is in order to help the working CLI daily activities. It implements the [Ge
 
 **Advantages:**
 
-* GTD Development Flux and Environment seamlessly integrated.
+* [Getting Things Done(GTD)](https://www.amazon.com/gp/product/B000WH7PKY) Development Flux and Environment seamlessly integrated.
 * Supports for OSX and Linux.
 * Object-Oriented bash style
 * Supports [**todo.txt-cli**](https://github.com/todotxt/todo.txt-cli).
@@ -24,9 +24,10 @@ See example of use below:
 ```shell
 $ today
 :
+~/Today $
 ```
 
-#![](images/gtd-5.png)
+![](images/gtd-5.png)
 
 ## Requirements and Tips
 
