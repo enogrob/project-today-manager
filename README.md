@@ -39,7 +39,7 @@ In order to install `Today Manager`, it is required that the following has been 
 Crafted (c) 2022 by Daitanlabs - We are stronger together 
 Today v1.0.0
 
-site [site    [help|methods|print|version]]
+today [today    [end|help|methods|print|start|version]]
 ::
 homepage http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager
 ```
