@@ -9,7 +9,8 @@ Solution Integrator Experienced - Certified by Ericsson
 
 **About**
 
-This is in order to help the working CLI daily activities. It implements the GTD process flow in the underlying file system.
+This is in order to help the working CLI daily activities. It implements the [Getting Things Done(GTD)](https://www.amazon.com/gp/product/B000WH7PKY) process flow in the underlying file system.
+
 
 **Advantages:**
 
@@ -25,7 +26,7 @@ $ today
 :
 ```
 
-#![](images/screenshot1.png)
+#![](images/gtd-5.png)
 
 ## Requirements and Tips
 
