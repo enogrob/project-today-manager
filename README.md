@@ -29,11 +29,11 @@ $ today
 
 ![](images/gtd-5.png)
 
-## Requirements and Tips
+**Requirements and Tips**
 
 In order to install `Today Manager`, it is required that the following has been installed already:
 
-* [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+* [tree](http://manpages.ubuntu.com/manpages/trusty/man1/tree.1.html) for installing do `sudo apt install tree`.
 
 **For further help:**
 
