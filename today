@@ -18,17 +18,17 @@ _inbox.collect(){
     ls -la $TODAY_INBOX
   fi
 }
-_inbox.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "inbox" "[$(inbox.methods)]"; }
+_inbox.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "inbox" "[$(_inbox.methods)]"; }
 _inbox.list(){ ls -la $TODAY_INBOX; }
 
 _logbook(){ cd $TODAY_LOGBOOK; }
 _logbook.methods(){ echo "help|list"; }
-_logbook.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(logbook.methods)]"; }
+_logbook.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(_logbook.methods)]"; }
 _logbook.list(){ tree -L 1 $TODAY_LOGBOOK; }
 
 _projects(){ cd $TODAY_PROJECTS; }
 _projects.methods(){ echo "help|list|new"; }
-_projects.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "projects" "[$(projects.methods)]"; }
+_projects.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "projects" "[$(_projects.methods)]"; }
 _projects.list(){ ls -la $TODAY_PROJECTS; }
 _projects.new(){
   local project=$1
@@ -48,7 +48,7 @@ _scheduled.end(){
     rm $TODAY_SCHEDULED/$project
   fi
 }
-_scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(scheduled.methods)]"; }
+_scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(_scheduled.methods)]"; }
 _scheduled.init(){
   local project=$(basename $(pwd))
   if test -L $TODAY_PROJECTS/$project; then
@@ -72,7 +72,7 @@ _someday.end(){
     rm $TODAY_SOMEDAY/$project
   fi
 }
-_someday.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(scheduled.methods)]"; }
+_someday.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "someday" "[$(_someday.methods)]"; }
 _someday.init(){
   local project=$(basename $(pwd))
   if test -L $TODAY_PROJECTS/$project; then
