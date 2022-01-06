@@ -41,12 +41,14 @@ In order to install `Today Manager`, it is required that the following has been 
 Crafted (c) 2021 by Daitanlabs - We are stronger together 
 Today v1.0.07
 
-today [help|list|init|end|setup|version]
+today [end|help|init|list|setup|version]
       [inbox [collect|help|list]]
       [logbook [help|list]]
-      [projects [help|ls|print]]
-      [scheduled [end|help|list|start|today]]
-      [scheduled [end|help|list|start|today]]
+      [projects [help|list|new]]
+      [scheduled [end|help|init|list|today]]
+      [someday [end|help|init|list|today]]
+
+homepage http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager
 ```
 **Installation**
 
