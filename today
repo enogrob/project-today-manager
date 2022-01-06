@@ -157,6 +157,9 @@ today.git.end(){
   git commit -s -m $*
   git push origin master
 }
+today.git.log(){
+  git log --oneline
+}
 today.help(){ printf "\e[1;37m%s\e[0m\e[1;36m%s\e[0m\n" "" "[$(today.methods)]"; }
 today.init(){
   local project=$(basename $(pwd))
@@ -218,6 +221,7 @@ today.setup(){
   alias tdg='today.git.status'
   alias tdgi='today.git.init'
   alias tdge='today.git.end'
+  alias tdgl='today.git.log'
 
   ! test -d $TODAY_THINGS && mkdir -p $TODAY_THINGS
 
