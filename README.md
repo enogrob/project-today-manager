@@ -66,5 +66,5 @@ popd
 * **1.0.0** Initial version.
 
 **Refs:
-* **[Todo.txt](http://todotxt.org)** - A simple and extensible shell script for managing your todo.txt file.
+* **[ Getting Things Done: The Art of Stress-Free Productivity](https://www.amazon.com/gp/product/B000WH7PKY)**
 
