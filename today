@@ -121,7 +121,7 @@ today(){
       ;;
     *)
       if [ -z "$1" ]; then
-        pushd $TODAY
+        cd $TODAY
       else   
         printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${1}"
       fi  
