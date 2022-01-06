@@ -24,12 +24,12 @@ _inbox.list(){ ls -la $TODAY_INBOX; }
 _logbook(){ cd $TODAY_LOGBOOK; }
 _logbook.methods(){ echo "help|list"; }
 _logbook.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(_logbook.methods)]"; }
-_logbook.list(){ ls -la $TODAY_LOGBOOK | awk 'print $9'; }
+_logbook.list(){ ls -p $TODAY_LOGBOOK | grep -v /; }
 
 _projects(){ cd $TODAY_PROJECTS; }
 _projects.methods(){ echo "help|list|new"; }
 _projects.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "projects" "[$(_projects.methods)]"; }
-_projects.list(){ ls -la $TODAY_PROJECTS | awk 'print $9'; }
+_projects.list(){ ls -l $TODAY_PROJECTS | awk '{print $9}'; }
 _projects.new(){
   local project=$1
 
@@ -57,7 +57,7 @@ _scheduled.init(){
     ln -sf $TODAY_PROJECTS/$project $TODAY_SCHEDULED/$project
   fi
 }
-_scheduled.list(){ ls -la $TODAY_SCHEDULED | awk 'print $9'; }
+_scheduled.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
 _scheduled.today(){
   local project=$(basename $(pwd))
   if test -L $TODAY_SCHEDULED/$project; then
@@ -83,7 +83,7 @@ _someday.init(){
     ln -sf $TODAY_SOMEDAY/$project $TODAY_PROJECTS/$project
   fi
 }
-_someday.list(){ ls -la  $TODAY_SCHEDULED | awk 'print $9'; }
+_someday.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
 _someday.today(){
   local project=$(basename $(pwd))
   if test -L $TODAY_SOMEDAY/$project; then
@@ -128,8 +128,8 @@ today(){
       ;;
   esac
 }
-today.list(){ ls -la $TODAY | awk 'print $9'; }
-today.methods(){ echo "end|help|init|list|setup|version"; }
+today.list(){ ls -p $TODAY | grep -v /; }
+today.methods(){ echo "end|help|init|jump|list|setup|version"; }
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
 today.end(){
   local project=$(basename $(pwd))
@@ -139,12 +139,37 @@ today.end(){
     rm $TODAY/$project
   fi
 }
+today.git.status(){
+  git status -s
+}
+today.git.init(){
+  git init  && \
+  hub create && \
+  git add . && \
+  git commit -am "performed-first-commit" && \
+  git push -u origin master 
+}
+today.git.end(){
+  git add . && \
+  git commit -am "$*" && \
+  git push -u origin master && \
+  git add .
+  git commit -s -m $*
+  git push origin master
+}
 today.help(){ printf "\e[1;37m%s\e[0m\e[1;36m%s\e[0m\n" "" "[$(today.methods)]"; }
 today.init(){
   local project=$(basename $(pwd))
   ! test -z "$1" && project=$1
   if test -d $TODAY_PROJECTS/$project; then
     ln -sf $TODAY_PROJECTS/$project $TODAY/$project
+  fi
+}
+today.jump(){
+  local project=$(basename $(pwd))
+  ! test -z "$1" && project=$1
+  if test -d $TODAY_PROJECTS/$project; then
+    cd $TODAY_PROJECTS/$project
   fi
 }
 today.setup(){
@@ -164,6 +189,7 @@ today.setup(){
   alias tdy='today'
   alias tdyl='today.list'
   alias tdyi='today.init'
+  alias tdyj='today.jump'
   alias tdye='today.end'
   
   alias tdp='_projects'
@@ -188,6 +214,10 @@ today.setup(){
   alias tdsi='_scheduled.init'
   alias tdse='_scheduled.end'
   alias tdse='_scheduled.today'
+
+  alias tdg='today.git.status'
+  alias tdgi='today.git.init'
+  alias tdge='today.git.end'
 
   ! test -d $TODAY_THINGS && mkdir -p $TODAY_THINGS
 
