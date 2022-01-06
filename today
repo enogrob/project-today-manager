@@ -133,10 +133,13 @@ today.methods(){ echo "end|help|init|jump|list|setup|version"; }
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
 today.end(){
   local project=$(basename $(pwd))
+  local project_name
   ! test -z "$1" && project=$1
-  if test -L $TODAY/$project; then
-    ln -sf $(readlink -f $TODAY/$project) $TODAY_LOGBOOK/$project
-    rm $TODAY/$project
+  today.list | grep $project &> /dev/null
+  if test $? -eq 0; then
+    project_name=$(today.list | grep $project | head -1)
+    ln -sf $(readlink -f $TODAY/$project) "$TODAY_LOGBOOK/$(date +'%Y-%m-%d %H%M%S') $project"
+    mv "$TODAY/$project_name" $TODAY_LOGBOOK
   fi
 }
 today.git.status(){
@@ -164,8 +167,9 @@ today.help(){ printf "\e[1;37m%s\e[0m\e[1;36m%s\e[0m\n" "" "[$(today.methods)]";
 today.init(){
   local project=$(basename $(pwd))
   ! test -z "$1" && project=$1
-  if test -d $TODAY_PROJECTS/$project; then
-    ln -sf $TODAY_PROJECTS/$project $TODAY/$project
+  today.list | grep $project &> /dev/null
+  if test $? -ne 0 && test -d $TODAY_PROJECTS/$project; then
+    ln -sf $TODAY_PROJECTS/$project "$TODAY/$(date +'%Y-%m-%d %H%M%S') $project"
   fi
 }
 today.jump(){
