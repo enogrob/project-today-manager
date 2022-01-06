@@ -188,7 +188,8 @@ today.setup(){
   export TODAY_SCHEDULED=$TODAY_THINGS/Scheduled
   export TODAY_SOMEDAY=$TODAY_THINGS/Someday
   export TODAY=$TODAY_THINGS/Today
-
+  
+  alias src='test -d src && cd src'
   alias tdy='today'
   alias tdyl='today.list'
   alias tdyi='today.init'
