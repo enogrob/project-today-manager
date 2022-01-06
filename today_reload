@@ -1,4 +1,0 @@
-cp today ~/.today
-pushd .
-source ~/.bashrc
-popd 
