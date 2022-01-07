@@ -43,16 +43,14 @@ _projects.new(){
 _scheduled(){ cd $TODAY_SCHEDULED; }
 _scheduled.methods(){ echo "end|help|init|list|today"; }
 _scheduled.end(){
-  local project=$(basename $(pwd))
-  ! test -z "$1" && project=$1
+  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   if test -L $TODAY_SCHEDULED/$project; then
     rm $TODAY_SCHEDULED/$project
   fi
 }
 _scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(_scheduled.methods)]"; }
 _scheduled.init(){
-  local project=$(basename $(pwd))
-  ! test -z "$1" && project=$1
+  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   if test -L $TODAY_PROJECTS/$project; then
     ln -sf $TODAY_PROJECTS/$project $TODAY_SCHEDULED/$project
   fi
@@ -69,16 +67,14 @@ _scheduled.today(){
 _someday(){ cd $TODAY_SOMEDAY; }
 _someday.methods(){ echo "end|help|init|list|today"; }
 _someday.end(){
-  local project=$(basename $(pwd))
-  ! test -z "$1" && project=$1
+  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   if test -L $TODAY_SOMEDAY/$project; then
     rm $TODAY_SOMEDAY/$project
   fi
 }
 _someday.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "someday" "[$(_someday.methods)]"; }
 _someday.init(){
-  local project=$(basename $(pwd))
-  ! test -z "$1" && project=$1
+  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   if test -L $TODAY_PROJECTS/$project; then
     ln -sf $TODAY_SOMEDAY/$project $TODAY_PROJECTS/$project
   fi
@@ -163,7 +159,7 @@ today.git.log(){
 }
 today.help(){ printf "\e[1;37m%s\e[0m\e[1;36m%s\e[0m\n" "" "[$(today.methods)]"; }
 today.init(){
-  local project=$(basename $(pwd))
+  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   local position=$(($(tdyl | wc -l) + 1))
   ! test -z "$1" && project=$1
   today.list | grep $project &> /dev/null
@@ -172,8 +168,7 @@ today.init(){
   fi
 }
 today.jump(){
-  local project=$(basename $(pwd))
-  ! test -z "$1" && project=$1
+  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   if test -d $TODAY_PROJECTS/$project; then
     cd $TODAY_PROJECTS/$project
   fi
