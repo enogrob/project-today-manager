@@ -126,6 +126,18 @@ today(){
 }
 today.list(){ ls -p $TODAY | grep -v /; }
 today.methods(){ echo "end|help|init|jump|list|setup|version"; }
+today.print(){ 
+  local position
+  local date
+  local project 
+  IFS=$'\n'
+  for p in `today.list`; do
+    position=$(echo $p | awk '{print $1}')
+    date=$(echo $p | awk '{print $2}')
+    project=$(echo $p | awk '{print $3}')
+    printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s \e[0m\n" $position $date $project
+  done   
+}
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
 today.end(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
@@ -169,7 +181,8 @@ today.init(){
 }
 today.jump(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
-  if [[ $project =~ $('^[0-9]+$') ]]; then
+  re='^[0-9]+$'
+  if [[ $project =~ $re ]]; then
     project=$(today.list | grep ^$project | head -1 | awk '{print $3}')
   fi
   if test -d $TODAY_PROJECTS/$project; then
