@@ -169,6 +169,9 @@ today.init(){
 }
 today.jump(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  if [[ $project =~ $('^[0-9]+$') ]]; then
+    project=$(today.list | grep ^$project | head -1 | awk '{print $3}')
+  fi
   if test -d $TODAY_PROJECTS/$project; then
     cd $TODAY_PROJECTS/$project
   fi
