@@ -136,8 +136,8 @@ today.print(){
     position=$(echo $p | awk '{print $1}')
     date=$(echo $p | awk '{print $2}')
     project=$(echo $p | awk '{print $3}')
-    tags=$(tag -l $project)
-    printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s \e[1;36m@%s \e[0m\n" $position $date $project $tags
+    tags=$(tag.list $project)
+    printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s  \e[1;36m#(%s) \e[0m\n" $position $date $project $tags
   done   
 }
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
@@ -255,6 +255,13 @@ today.setup(){
   ! test -L $HOME/Someday && ln -sf $TODAY_SOMEDAY $HOME/Someday
   ! test -L $HOME/Scheduled && ln -sf $TODAY_SCHEDULED $HOME/Scheduled
   ! test -L $HOME/Today && ln -sf $TODAY $HOME/Today
+
+  if ! test -f $HOME/Projects/project-tag-manager/tag; then
+    printf " \e[0;31m%s \e[0m\n" "=>" "Tag is not installed."
+    exit 1
+  else 
+    source $HOME/Projects/project-tag-manager/tag
+  fi  
 }
 today.version(){
   printf "\e[0;37m%s \e[0m%s\n" "Today" "$TODAY_VERSION"
