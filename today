@@ -136,8 +136,8 @@ today.print(){
     position=$(echo $p | awk '{print $1}')
     date=$(echo $p | awk '{print $2}')
     project=$(echo $p | awk '{print $3}')
-    tags=$(tag.list $project)
-    printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s  \e[1;36m#(%s) \e[0m\n" $position $date $project $tags
+    tags=$(echo $(tag.list $project) | sed 's/,/ #/g')
+    printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s  \e[1;36m#%s \e[0m\n" $position $date $project $tags
   done   
 }
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
