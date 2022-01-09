@@ -54,20 +54,22 @@ _scheduled.end(){
 _scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(_scheduled.methods)]"; }
 _scheduled.init(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
-  local position=$(($(tdyl | wc -l) + 1))
+  local position=$(($(tdsl | wc -l) + 1))
   ! test -z "$1" && project=$1
   _scheduled.list | grep $project &> /dev/null
   if test $? -ne 0 && test -d $TODAY_PROJECTS/$project; then
     if test -z $2; then
-      ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULE/$position $(date +'%Y-%m-%d') $project"
+      ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $(date +'%Y-%m-%d') $project"
     else
-      read Y m d <<< ${$2//[-]/ }
-      read -r Y m d  <<< "$(date '+%Y %m %d' -d "$2")"
-      ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULE/$position "$Y-$m-$d" $project"
+      saveIFS="$IFS"
+      IFS="-" 
+      read -r Y m d  <<< "$(date '+%Y-%m-%d' -d "$2")"
+      IFS="$saveIFS"
+      ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $Y-$m-$d $project"
     fi  
   fi
 }
-scheduled.jump(){
+_scheduled.jump(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   re='^[0-9]+$'
   if [[ $project =~ $re ]]; then
@@ -107,7 +109,7 @@ _someday.init(){
     ln -sf $TODAY_PROJECTS/$project "$TODAY_SOMEDAY/$position $(date +'%Y-%m-%d') $project"
   fi
 }
-sometoday.jump(){
+_sometoday.jump(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
   re='^[0-9]+$'
   if [[ $project =~ $re ]]; then
@@ -169,6 +171,7 @@ today.print(){
   local date
   local project 
   local tags
+  saveIFS="$IFS"
   IFS=$'\n'
   for p in `today.list`; do
     position=$(echo $p | awk '{print $1}')
@@ -177,6 +180,14 @@ today.print(){
     tags=$(echo $(tag.list $project) | sed 's/,/ #/g')
     printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s  \e[1;36m#%s \e[0m\n" $position $date $project $tags
   done   
+  for p in `_scheduled.list`; do
+    position=$(echo $p | awk '{print $1}')
+    date=$(echo $p | awk '{print $2}')
+    project=$(echo $p | awk '{print $3}')
+    tags=$(echo $(tag.list $project) | sed 's/,/ #/g')
+    printf "\e[0;37m%s \e[0;33m%s \e[0;32m%s  \e[1;36m#%s \e[0m\n" $position $date $project $tags
+  done   
+  IFS="$saveIFS"
 }
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
 today.end(){
@@ -273,7 +284,7 @@ today.setup(){
   alias tdsi='_scheduled.init'
   alias tdsj='_scheduled.jump'
   alias tdse='_scheduled.end'
-  alias tdse='_scheduled.today'
+  alias tdst='_scheduled.today'
 
   alias tdg='today.git.status'
   alias tdgi='today.git.init'
