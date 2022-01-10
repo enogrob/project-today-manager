@@ -297,6 +297,7 @@ today.setup(){
   export TODAY=$TODAY_THINGS/Today
   
   alias src='test -d src && cd src'
+  alias tdya='today.archive'
   alias tdy='today'
   alias tdyl='today.list'
   alias tdyi='today.init'
