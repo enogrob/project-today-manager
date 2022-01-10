@@ -12,7 +12,7 @@
 # setters
 _set_project(){
   local project=$1
-  if test -z "project"; then
+  if test -z "$project"; then
     if ! test -L "$(pwd)"; then 
       echo $(basename $(pwd))
     else
