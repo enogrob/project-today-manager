@@ -43,7 +43,13 @@ _logbook.list(){ ls -p $TODAY_LOGBOOK | grep -v /; }
 _projects(){ pushd $TODAY_PROJECTS; }
 _projects.methods(){ echo "help|list|new"; }
 _projects.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "projects" "[$(_projects.methods)]"; }
-_projects.list(){ ls -l $TODAY_PROJECTS | awk '{print $9}'; }
+_projects.list(){ 
+  if test -z $1; then
+    ls -l $TODAY_PROJECTS | awk '{print $9}'; 
+  else
+    ls -l $TODAY_PROJECTS | awk '{print $9}' | grep "$1"; 
+  fi  
+}
 _projects.new(){
   local project=$1
 
