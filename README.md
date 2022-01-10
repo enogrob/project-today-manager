@@ -21,9 +21,28 @@ This is in order to help the working CLI daily activities. It implements the [Ge
 See example of use below:
 
 ```shell
-$ today
+$ tdpl
 :
-~/Today $
+tutorial-building-debian
+
+$ tdyi tutorial-building-debian
+$ tdyl
+:
+1 2022-01-07 tutorial-building-debian
+2 2022-01-07 project-puppet-postgresql-upgrade
+
+$ tdyj 1
+:
+tutorial-building-debian $ tdy
+
+Today $ tdye tutorial-building-debian
+Today $ tdyl
+:
+2 2022-01-07 project-puppet-postgresql-upgrade
+
+Today $ tdll
+:
+2022-01-09_2329-tutorial-building-debian
 ```
 
 ![](images/gtd-5.png)
@@ -55,7 +74,7 @@ homepage http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager
 pushd /tmp
 git clone git@github.com:enogrob/project-today-manager.git
 source ./project-today-manager/today
-mv project-today-manager ~/Today
+mv project-today-manager ~/Projects
 echo "test -f ~/Projects/project-today-manager/today && source ~/Projects/project-today-manager/today" >> ~/.bashrc
 source ~/.bashrc
 popd
@@ -65,6 +84,6 @@ popd
 
 * **1.0.0** Initial version.
 
-**Refs:
+**Refs:**
 * **[ Getting Things Done: The Art of Stress-Free Productivity](https://www.amazon.com/gp/product/B000WH7PKY)**
 

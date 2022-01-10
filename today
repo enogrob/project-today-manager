@@ -9,7 +9,7 @@
 
 # set -x
 
-_inbox(){ cd $TODAY_INBOX; }
+_inbox(){ pushd $TODAY_INBOX; }
 _inbox.methods(){ echo "collect|help|list"; }
 _inbox.collect(){
   local project=$1
@@ -21,12 +21,12 @@ _inbox.collect(){
 _inbox.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "inbox" "[$(_inbox.methods)]"; }
 _inbox.list(){ ls -la $TODAY_INBOX; }
 
-_logbook(){ cd $TODAY_LOGBOOK; }
+_logbook(){ pushd $TODAY_LOGBOOK; }
 _logbook.methods(){ echo "help|list"; }
 _logbook.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(_logbook.methods)]"; }
 _logbook.list(){ ls -p $TODAY_LOGBOOK | grep -v /; }
 
-_projects(){ cd $TODAY_PROJECTS; }
+_projects(){ pushd $TODAY_PROJECTS; }
 _projects.methods(){ echo "help|list|new"; }
 _projects.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "projects" "[$(_projects.methods)]"; }
 _projects.list(){ ls -l $TODAY_PROJECTS | awk '{print $9}'; }
@@ -40,7 +40,7 @@ _projects.new(){
   fi
 }
 
-_scheduled(){ cd $TODAY_SCHEDULED; }
+_scheduled(){ pushd $TODAY_SCHEDULED; }
 _scheduled.methods(){ echo "end|help|init|jump|list|today"; }
 _scheduled.end(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
@@ -76,7 +76,7 @@ _scheduled.jump(){
     project=$(_scheduled.list | grep ^$project | head -1 | awk '{print $3}')
   fi
   if test -d $TODAY_PROJECTS/$project; then
-    cd $TODAY_PROJECTS/$project
+    pushd $TODAY_PROJECTS/$project
   fi
 }
 _scheduled.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
@@ -88,7 +88,7 @@ _scheduled.today(){
   fi
 }
 
-_someday(){ cd $TODAY_SOMEDAY; }
+_someday(){ pushd $TODAY_SOMEDAY; }
 _someday.methods(){ echo "end|help|init|jump|list|today"; }
 _someday.end(){
   local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
@@ -116,7 +116,7 @@ _sometoday.jump(){
     project=$(_sometoday.list | grep ^$project | head -1 | awk '{print $3}')
   fi
   if test -d $TODAY_PROJECTS/$project; then
-    cd $TODAY_PROJECTS/$project
+    pushd $TODAY_PROJECTS/$project
   fi
 }
 _someday.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
@@ -157,7 +157,7 @@ today(){
       ;;
     *)
       if [ -z "$1" ]; then
-        cd $TODAY
+        pushd $TODAY
       else   
         printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${1}"
       fi  
@@ -177,15 +177,27 @@ today.print(){
     position=$(echo $p | awk '{print $1}')
     date=$(echo $p | awk '{print $2}')
     project=$(echo $p | awk '{print $3}')
-    tags=$(echo $(tag.list $project) | sed 's/,/ #/g')
-    printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s  \e[1;36m#%s \e[0m\n" $position $date $project $tags
+    tags=$(echo $(tag.list $project))
+    ! test -z $tags && tags=$(echo $tags | sed 's/,/ #/g')
+    printf "\e[0;37m%s \e[0;37m%s \e[0;32m%s " $position $date $project
+    if ! test -z $tags; then
+      printf "\e[1;36m#%s \e[0m\n" $tags
+    else  
+      printf "\n" 
+    fi  
   done   
   for p in `_scheduled.list`; do
     position=$(echo $p | awk '{print $1}')
     date=$(echo $p | awk '{print $2}')
     project=$(echo $p | awk '{print $3}')
-    tags=$(echo $(tag.list $project) | sed 's/,/ #/g')
-    printf "\e[0;37m%s \e[0;33m%s \e[0;32m%s  \e[1;36m#%s \e[0m\n" $position $date $project $tags
+    tags=$(echo $(tag.list $project))
+    ! test -z $tags && tags=$(echo $tags | sed 's/,/ #/g')
+    printf "\e[0;37m%s \e[0;33m%s \e[0;32m%s " $position $date $project
+    if ! test -z $tags; then
+      printf "\e[1;36m#%s \e[0m\n" $tags
+    else  
+      printf "\n" 
+    fi  
   done   
   IFS="$saveIFS"
 }
@@ -237,7 +249,7 @@ today.jump(){
     project=$(today.list | grep ^$project | head -1 | awk '{print $3}')
   fi
   if test -d $TODAY_PROJECTS/$project; then
-    cd $TODAY_PROJECTS/$project
+    pushd $TODAY_PROJECTS/$project
   fi
 }
 today.setup(){
