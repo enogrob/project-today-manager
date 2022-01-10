@@ -9,6 +9,20 @@
 
 # set -x
 
+# setters
+_set_project(){
+  local project=$1
+  if test -z "project"; then
+    if ! test -L "$(pwd)"; then 
+      echo $(basename $(pwd))
+    else
+      echo $(basename $(readlink -f "$(pwd)"))
+    fi  
+  else 
+    echo $1
+  fi
+}
+
 _inbox(){ pushd $TODAY_INBOX; }
 _inbox.methods(){ echo "collect|help|list"; }
 _inbox.collect(){
@@ -43,7 +57,7 @@ _projects.new(){
 _scheduled(){ pushd $TODAY_SCHEDULED; }
 _scheduled.methods(){ echo "end|help|init|jump|list|today"; }
 _scheduled.end(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   _scheduled.list | grep $project &> /dev/null
   if test $? -eq 0; then
     project_name=$(_scheduled.list | grep $project | head -1)
@@ -53,7 +67,7 @@ _scheduled.end(){
 }
 _scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(_scheduled.methods)]"; }
 _scheduled.init(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   local position=$(($(tdsl | wc -l) + 1))
   ! test -z "$1" && project=$1
   _scheduled.list | grep $project &> /dev/null
@@ -70,7 +84,7 @@ _scheduled.init(){
   fi
 }
 _scheduled.jump(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   re='^[0-9]+$'
   if [[ $project =~ $re ]]; then
     project=$(_scheduled.list | grep ^$project | head -1 | awk '{print $3}')
@@ -100,7 +114,7 @@ _scheduled.today(){
 _someday(){ pushd $TODAY_SOMEDAY; }
 _someday.methods(){ echo "end|help|init|jump|list|today"; }
 _someday.end(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   _someday.list | grep $project &> /dev/null
   if test $? -eq 0; then
     project_name=$(_someday.list | grep $project | head -1)
@@ -110,7 +124,7 @@ _someday.end(){
 }
 _someday.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "someday" "[$(_someday.methods)]"; }
 _someday.init(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   local position=$(($(tdyl | wc -l) + 1))
   ! test -z "$1" && project=$1
   _someday.list | grep $project &> /dev/null
@@ -119,7 +133,7 @@ _someday.init(){
   fi
 }
 _sometoday.jump(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   re='^[0-9]+$'
   if [[ $project =~ $re ]]; then
     project=$(_sometoday.list | grep ^$project | head -1 | awk '{print $3}')
@@ -130,7 +144,7 @@ _sometoday.jump(){
 }
 _someday.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
 _someday.today(){
-  local project=$(basename $(pwd))
+  local project=$(_set_project $1)
   if test -L $TODAY_SOMEDAY/$project; then
     ln -sf $(readlink -f $TODAY_SOMEDAY/$project) $TODAY/$project
     rm $TODAY_SOMEDAY/$project
@@ -232,7 +246,7 @@ today.print(){
 }
 today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
 today.end(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   today.list | grep $project &> /dev/null
   if test $? -eq 0; then
     project_name=$(today.list | grep $project | head -1)
@@ -263,7 +277,7 @@ today.git.log(){
 }
 today.help(){ printf "\e[1;37m%s\e[0m\e[1;36m%s\e[0m\n" "" "[$(today.methods)]"; }
 today.init(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   local position=$(($(tdyl | wc -l) + 1))
   ! test -z "$1" && project=$1
   today.list | grep $project &> /dev/null
@@ -272,7 +286,7 @@ today.init(){
   fi
 }
 today.jump(){
-  local project=$(if test -z "$1"; then echo $(basename $(pwd));else echo $1;fi)
+  local project=$(_set_project $1)
   re='^[0-9]+$'
   if [[ $project =~ $re ]]; then
     project=$(today.list | grep ^$project | head -1 | awk '{print $3}')
