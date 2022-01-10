@@ -176,8 +176,24 @@ today(){
       ;;
   esac
 }
-today.list(){ ls -p $TODAY | grep -v /; }
-today.methods(){ echo "end|help|init|jump|list|setup|version"; }
+today.methods(){ echo "archive|end|help|init|jump|list|setup|version"; }
+today.archive(){
+  local position
+  local date
+  local project 
+  local projects
+  position=0
+  saveIFS="$IFS"
+  IFS=$'\n'
+  projects=(`today.list`)
+  for p in ${projects[@]}; do
+    position=$(($position + 1))
+    date=$(echo $p | awk '{print $2}')
+    project=$(echo $p | awk '{print $3}')
+    mv "$TODAY/$p" "$TODAY/$position $date $project" 
+  done   
+  IFS="$saveIFS"
+}
 today.print(){ 
   local position
   local date
@@ -265,6 +281,7 @@ today.jump(){
     pushd $TODAY_PROJECTS/$project
   fi
 }
+today.list(){ ls -p $TODAY | grep -v /; }
 today.setup(){
   export TODAY_UPDATE_MESSAGE="Improve 'today.print' and 'today.setup' in order to handle scheduled projects."
   export TODAY_VERSION=v1.0.1
