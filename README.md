@@ -66,6 +66,37 @@ today [end|help|init|list|setup|version]
       [scheduled [end|help|init|list|today]]
       [someday [end|help|init|list|today]]
 
+aliases
+  alias tdg='today.git.status'
+  alias tdge='today.git.end'
+  alias tdgi='today.git.init'
+  alias tdgl='today.git.log'
+  alias tdi='_inbox'
+  alias tdic='_inbox.collect'
+  alias tdil='_inbox.list'
+  alias tdl='_logbook'
+  alias tdll='_logbook.list'
+  alias tdp='_projects'
+  alias tdpl='_projects.list'
+  alias tdpn='_projects.new'
+  alias tds='_scheduled'
+  alias tdsd='_someday'
+  alias tdsde='_someday.end'
+  alias tdsdi='_someday.init'
+  alias tdsdj='_someday.jump'
+  alias tdsdl='_someday.list'
+  alias tdsdt='_someday.today'
+  alias tdse='_scheduled.end'
+  alias tdsi='_scheduled.init'
+  alias tdsj='_scheduled.jump'
+  alias tdsl='_scheduled.list'
+  alias tdst='_scheduled.today'
+  alias tdy='today'
+  alias tdye='today.end'
+  alias tdyi='today.init'
+  alias tdyj='today.jump'
+  alias tdyl='today.list'      
+
 homepage http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager
 ```
 **Installation**

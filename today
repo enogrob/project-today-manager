@@ -145,7 +145,10 @@ today(){
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_projects.help)]" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_scheduled.help)]" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_someday.help)]" 
-      printf "\n"  
+      printf "\n" 
+      printf "\e[1;37m%s \e[0m\n" "aliases"
+      alias | grep "^alias td" | sed 's/^/  /g'
+      printf "\n" 
       printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager"
       printf "\n"
       ;;
