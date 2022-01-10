@@ -55,7 +55,24 @@ _projects.new(){
 }
 
 _scheduled(){ pushd $TODAY_SCHEDULED; }
-_scheduled.methods(){ echo "end|help|init|jump|list|today"; }
+_scheduled.methods(){ echo "archive|end|help|init|jump|list|today"; }
+_scheduled.archive(){
+  local position
+  local date
+  local project 
+  local projects
+  position=0
+  saveIFS="$IFS"
+  IFS=$'\n'
+  projects=(`_scheduled.list`)
+  for p in ${projects[@]}; do
+    position=$(($position + 1))
+    date=$(echo $p | awk '{print $2}')
+    project=$(echo $p | awk '{print $3}')
+    mv "$TODAY_SCHEDULED/$p" "$TODAY_SCHEDULED/$position $date $project" 
+  done   
+  IFS="$saveIFS"
+}
 _scheduled.end(){
   local project=$(_set_project $1)
   _scheduled.list | grep $project &> /dev/null
@@ -297,8 +314,8 @@ today.jump(){
 }
 today.list(){ ls -p $TODAY | grep -v /; }
 today.setup(){
-  export TODAY_UPDATE_MESSAGE="Improve 'today.print' and 'today.setup' in order to handle scheduled projects."
-  export TODAY_VERSION=v1.0.1
+  export TODAY_UPDATE_MESSAGE="Add 'today.archivet' and 'scheduled.archive' to re-order projects in list methods."
+  export TODAY_VERSION=v1.0.2
   export TODAY_VERSION_DATE=2022.01.10
   
   export TODAY_THINGS=$HOME/Things
@@ -337,6 +354,7 @@ today.setup(){
   alias tdil='_inbox.list'
   
   alias tds='_scheduled'
+  alias tdsa='_scheduled.archive'
   alias tdsl='_scheduled.list'
   alias tdsi='_scheduled.init'
   alias tdsj='_scheduled.jump'

@@ -59,11 +59,11 @@ In order to install `Today Manager`, it is required that the following has been 
 Crafted (c) 2021 by Daitanlabs - We are stronger together 
 Today v1.0.1
 
-today [end|help|init|list|setup|version]
+today [archive|end|help|init|list|setup|version]
       [inbox [collect|help|list]]
       [logbook [help|list]]
       [projects [help|list|new]]
-      [scheduled [end|help|init|list|today]]
+      [scheduled [archive|end|help|init|list|today]]
       [someday [end|help|init|list|today]]
 
 aliases
@@ -80,6 +80,7 @@ aliases
   alias tdpl='_projects.list'
   alias tdpn='_projects.new'
   alias tds='_scheduled'
+  alias tdsa='_scheduled.archive'
   alias tdsd='_someday'
   alias tdsde='_someday.end'
   alias tdsdi='_someday.init'
@@ -92,6 +93,7 @@ aliases
   alias tdsl='_scheduled.list'
   alias tdst='_scheduled.today'
   alias tdy='today'
+  alias tdya='today.archive'
   alias tdye='today.end'
   alias tdyi='today.init'
   alias tdyj='today.jump'
@@ -113,6 +115,7 @@ popd
 
 **Changes log**
 
+* **1.0.2** Add `today.archivet` and `scheduled.archive` to re-order projects in list methods.
 * **1.0.1** Improve `today.print` and `today.setup` in order to handle scheduled projects.
 * **1.0.0** Initial version.
 
