@@ -81,11 +81,20 @@ _scheduled.jump(){
 }
 _scheduled.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
 _scheduled.today(){
-  local project=$(basename $(pwd))
-  if test -L $TODAY_SCHEDULED/$project; then
-    ln -sf $(readlink -f $TODAY_SCHEDULED/$project) $TODAY/$project
-    rm $TODAY_SCHEDULED/$project
-  fi
+  local date_today=$(date +%s)
+  local date_scheduled
+  saveIFS="$IFS"
+  IFS=$'\n'
+  for p in `_scheduled.list`; do
+    project=$(echo $p | awk '{print $3}')
+    date_project=$(echo $p | awk '{print $2}')
+    date_scheduled=$(date -d "${date_project}" '+%s')
+    if [ $date_today -ge $date_scheduled ]; then
+      _scheduled.end $project
+      today.init $project
+    fi
+  done   
+  IFS="$saveIFS"
 }
 
 _someday(){ pushd $TODAY_SOMEDAY; }
@@ -174,6 +183,7 @@ today.print(){
   local date
   local project 
   local tags
+  _scheduled.today
   saveIFS="$IFS"
   IFS=$'\n'
   for p in `today.list`; do
@@ -256,9 +266,9 @@ today.jump(){
   fi
 }
 today.setup(){
-  export TODAY_UPDATE_MESSAGE="Initial version"
-  export TODAY_VERSION=v1.0.07
-  export TODAY_VERSION_DATE=2022.01.06
+  export TODAY_UPDATE_MESSAGE="Improve 'today.print' and 'today.setup' in order to handle scheduled projects."
+  export TODAY_VERSION=v1.0.1
+  export TODAY_VERSION_DATE=2022.01.10
   
   export TODAY_THINGS=$HOME/Things
   
@@ -327,7 +337,10 @@ today.setup(){
     exit 1
   else 
     source $HOME/Projects/project-tag-manager/tag
-  fi  
+  fi 
+
+# callbacks
+  _scheduled.today 
 }
 today.version(){
   printf "\e[0;37m%s \e[0m%s\n" "Today" "$TODAY_VERSION"

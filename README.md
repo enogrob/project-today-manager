@@ -57,7 +57,7 @@ In order to install `Today Manager`, it is required that the following has been 
 
 ```shell
 Crafted (c) 2021 by Daitanlabs - We are stronger together 
-Today v1.0.07
+Today v1.0.1
 
 today [end|help|init|list|setup|version]
       [inbox [collect|help|list]]
@@ -113,6 +113,7 @@ popd
 
 **Changes log**
 
+* **1.0.1** Improve `today.print` and `today.setup` in order to handle scheduled projects.
 * **1.0.0** Initial version.
 
 **Refs:**
