@@ -83,8 +83,17 @@ _scheduled.end(){
   local project=$(_set_project $1)
   _scheduled.list | grep $project &> /dev/null
   if test $? -eq 0; then
+    today.init $project
     project_name=$(_scheduled.list | grep $project | head -1)
-    ln -sf $(readlink -f "$TODAY_SCHEDULED/$project_name") "$TODAY_LOGBOOK/$(date +'%Y-%m-%d_%H%M%S')-$project"
+    rm -f "$TODAY_SCHEDULED/$project_name"
+  fi
+}
+_scheduled.someday(){
+  local project=$(_set_project $1)
+  _scheduled.list | grep $project &> /dev/null
+  if test $? -eq 0; then
+    _someday.init $project
+    project_name=$(_scheduled.list | grep $project | head -1)
     rm -f "$TODAY_SCHEDULED/$project_name"
   fi
 }
@@ -128,7 +137,6 @@ _scheduled.today(){
     date_scheduled=$(date -d "${date_project}" '+%s')
     if [ $date_today -ge $date_scheduled ]; then
       _scheduled.end $project
-      today.init $project
     fi
   done   
   IFS="$saveIFS"
@@ -148,11 +156,9 @@ _someday.end(){
 _someday.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "someday" "[$(_someday.methods)]"; }
 _someday.init(){
   local project=$(_set_project $1)
-  local position=$(($(tdyl | wc -l) + 1))
-  ! test -z "$1" && project=$1
   _someday.list | grep $project &> /dev/null
   if test $? -ne 0 && test -d $TODAY_PROJECTS/$project; then
-    ln -sf $TODAY_PROJECTS/$project "$TODAY_SOMEDAY/$position $(date +'%Y-%m-%d') $project"
+    ln -sf $TODAY_PROJECTS/$project "$TODAY_SOMEDAY/$project"
   fi
 }
 _sometoday.jump(){
@@ -165,7 +171,7 @@ _sometoday.jump(){
     pushd $TODAY_PROJECTS/$project
   fi
 }
-_someday.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
+_someday.list(){ ls -p $TODAY_SOMEDAY | grep -v /; }
 _someday.today(){
   local project=$(_set_project $1)
   if test -L $TODAY_SOMEDAY/$project; then
@@ -340,6 +346,7 @@ today.setup(){
   alias tdyi='today.init'
   alias tdyj='today.jump'
   alias tdye='today.end'
+  alias tdysd='today.someday'
   
   alias tdp='_projects'
   alias tdpl='_projects.list'
@@ -366,6 +373,7 @@ today.setup(){
   alias tdsj='_scheduled.jump'
   alias tdse='_scheduled.end'
   alias tdst='_scheduled.today'
+  alias tdssd='_scheduled.someday'
 
   alias tdg='today.git.status'
   alias tdgi='today.git.init'
@@ -397,6 +405,15 @@ today.setup(){
 
 # callbacks
   _scheduled.today 
+}
+today.someday(){
+  local project=$(_set_project $1)
+  today.list | grep $project &> /dev/null
+  if test $? -eq 0; then
+    _someday.init $project
+    project_name=$(today.list | grep $project | head -1)
+    rm -f "$TODAY/$project_name"
+  fi
 }
 today.version(){
   printf "\e[0;37m%s \e[0m%s\n" "Today" "$TODAY_VERSION"
