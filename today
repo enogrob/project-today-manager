@@ -1,44 +1,28 @@
-#!/bin/bash
-## Crafted (c) 2021 by Daitanlabs - We are stronger together
+#!/usr/bin/env zsh
+## Crafted (c) 2025 by Zoatworks - We are stronger together
 ## Prepared : Roberto Nogueira
 ## File     : today
 ## Project  : project-today-manager
 ## Reference: bash
-## Depends  : tree, todotxt, xclip
+## Depends  : tag
 ## Purpose  : Help to manage gtd process flow implemented in the file system.
 
-# set -x
+setopt SH_WORD_SPLIT KSH_ARRAYS
+alias readlink='realpath'
 
 # setters
 _set_project(){
   local project=$1
   if test -z "$project"; then
     if ! test -L "$(pwd)"; then 
-      echo $(basename $(pwd))
+      echo $(basename $(realpath "$(pwd)"))
     else
-      echo $(basename $(readlink -f "$(pwd)"))
+      echo $(basename $(realpath "$(pwd)"))
     fi  
   else 
     echo $1
   fi
 }
-
-_inbox(){ pushd $TODAY_INBOX; }
-_inbox.methods(){ echo "collect|help|list"; }
-_inbox.collect(){
-  local project=$1
-  if test -d $TODAY_INBOX; then
-    mv $1 $TODAY_INBOX
-    ls -la $TODAY_INBOX
-  fi
-}
-_inbox.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "inbox" "[$(_inbox.methods)]"; }
-_inbox.list(){ ls -la $TODAY_INBOX; }
-
-_logbook(){ pushd $TODAY_LOGBOOK; }
-_logbook.methods(){ echo "help|list"; }
-_logbook.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "logbook" "[$(_logbook.methods)]"; }
-_logbook.list(){ ls -p $TODAY_LOGBOOK | grep -v /; }
 
 _projects(){ pushd $TODAY_PROJECTS; }
 _projects.methods(){ echo "help|list|new"; }
@@ -70,7 +54,7 @@ _scheduled.archive(){
   position=0
   saveIFS="$IFS"
   IFS=$'\n'
-  projects=(`_scheduled.list`)
+  projects=("${(@f)$(_scheduled.list)}")
   for p in ${projects[@]}; do
     position=$(($position + 1))
     date=$(echo $p | awk '{print $2}')
@@ -88,15 +72,6 @@ _scheduled.end(){
     rm -f "$TODAY_SCHEDULED/$project_name"
   fi
 }
-_scheduled.someday(){
-  local project=$(_set_project $1)
-  _scheduled.list | grep $project &> /dev/null
-  if test $? -eq 0; then
-    _someday.init $project
-    project_name=$(_scheduled.list | grep $project | head -1)
-    rm -f "$TODAY_SCHEDULED/$project_name"
-  fi
-}
 _scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(_scheduled.methods)]"; }
 _scheduled.init(){
   local project=$(_set_project $1)
@@ -108,8 +83,10 @@ _scheduled.init(){
       ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $(date +'%Y-%m-%d') $project"
     else
       saveIFS="$IFS"
-      IFS="-" 
-      read -r Y m d  <<< "$(date '+%Y-%m-%d' -d "$2")"
+      # parse ISO date on macOS
+      parsed_date=$(date -j -f "%Y-%m-%d" "$2" +"%Y-%m-%d")
+      IFS="-"
+      read Y m d <<< "$parsed_date"
       IFS="$saveIFS"
       ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $Y-$m-$d $project"
     fi  
@@ -131,54 +108,22 @@ _scheduled.today(){
   local date_scheduled
   saveIFS="$IFS"
   IFS=$'\n'
-  for p in `_scheduled.list`; do
-    project=$(echo $p | awk '{print $3}')
-    date_project=$(echo $p | awk '{print $2}')
-    date_scheduled=$(date -d "${date_project}" '+%s')
-    if [ $date_today -ge $date_scheduled ]; then
-      _scheduled.end $project
+  for p in "${(@f)$(_scheduled.list)}"; do
+      project=$(echo $p | awk '{print $3}')
+      date_project=$(echo $p | awk '{print $2}')
+    # only parse valid ISO dates, skip otherwise
+    if [[ "$date_project" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+      date_scheduled=$(date -j -f "%Y-%m-%d" "${date_project}" "+%s" 2>/dev/null) || date_scheduled=0
+    else
+      continue
     fi
-  done   
+      if [ $date_today -ge $date_scheduled ]; then
+        _scheduled.end $project
+      fi
+    done   
   IFS="$saveIFS"
 }
 
-_someday(){ pushd $TODAY_SOMEDAY; }
-_someday.methods(){ echo "end|help|init|jump|list|today"; }
-_someday.end(){
-  local project=$(_set_project $1)
-  _someday.list | grep $project &> /dev/null
-  if test $? -eq 0; then
-    project_name=$(_someday.list | grep $project | head -1)
-    ln -sf $(readlink -f "$TODAY_SOMEDAY/$project_name") "$TODAY_LOGBOOK/$(date +'%Y-%m-%d_%H%M%S')-$project"
-    rm -f "$TODAY_SOMEDAY/$project_name"
-  fi
-}
-_someday.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "someday" "[$(_someday.methods)]"; }
-_someday.init(){
-  local project=$(_set_project $1)
-  _someday.list | grep $project &> /dev/null
-  if test $? -ne 0 && test -d $TODAY_PROJECTS/$project; then
-    ln -sf $TODAY_PROJECTS/$project "$TODAY_SOMEDAY/$project"
-  fi
-}
-_sometoday.jump(){
-  local project=$(_set_project $1)
-  re='^[0-9]+$'
-  if [[ $project =~ $re ]]; then
-    project=$(_sometoday.list | grep ^$project | head -1 | awk '{print $3}')
-  fi
-  if test -d $TODAY_PROJECTS/$project; then
-    pushd $TODAY_PROJECTS/$project
-  fi
-}
-_someday.list(){ ls -p $TODAY_SOMEDAY | grep -v /; }
-_someday.today(){
-  local project=$(_set_project $1)
-  if test -L $TODAY_SOMEDAY/$project; then
-    ln -sf $(readlink -f $TODAY_SOMEDAY/$project) $TODAY/$project
-    rm $TODAY_SOMEDAY/$project
-  fi
-}
 
 # today
 today(){
@@ -192,11 +137,8 @@ today(){
       printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2021 by Daitanlabs - We are stronger together"
       today.version
       printf "\e[1;37m%s \e[0m%s\n" "today" "$(today.help)" 
-      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_inbox.help)]" 
-      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_logbook.help)]" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_projects.help)]" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_scheduled.help)]" 
-      printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_someday.help)]" 
       printf "\n" 
       printf "\e[1;37m%s \e[0m\n" "aliases"
       alias | grep "^alias td" | sed 's/^/  /g'
@@ -228,7 +170,7 @@ today.archive(){
   position=0
   saveIFS="$IFS"
   IFS=$'\n'
-  projects=(`today.list`)
+  projects=("${(@f)$(today.list)}")
   for p in ${projects[@]}; do
     position=$(($position + 1))
     date=$(echo $p | awk '{print $2}')
@@ -245,7 +187,7 @@ today.print(){
   _scheduled.today
   saveIFS="$IFS"
   IFS=$'\n'
-  for p in `today.list`; do
+  for p in "${(@f)$(today.list)}"; do
     position=$(echo $p | awk '{print $1}')
     date=$(echo $p | awk '{print $2}')
     project=$(echo $p | awk '{print $3}')
@@ -258,7 +200,7 @@ today.print(){
       printf "\n" 
     fi  
   done   
-  for p in `_scheduled.list`; do
+  for p in "${(@f)$(_scheduled.list)}"; do
     position=$(echo $p | awk '{print $1}')
     date=$(echo $p | awk '{print $2}')
     project=$(echo $p | awk '{print $3}')
@@ -279,30 +221,8 @@ today.end(){
   today.list | grep $project &> /dev/null
   if test $? -eq 0; then
     project_name=$(today.list | grep $project | head -1)
-    ln -sf $(readlink -f "$TODAY/$project_name") "$TODAY_LOGBOOK/$(date +'%Y-%m-%d_%H%M%S')-$project"
     rm -f "$TODAY/$project_name"
   fi
-}
-today.git.status(){
-  git status -s
-}
-today.git.init(){
-  git init  && \
-  hub create && \
-  git add . && \
-  git commit -am "performed-first-commit" && \
-  git push -u origin master 
-}
-today.git.end(){
-  git add . && \
-  git commit -am "$*" && \
-  git push -u origin master && \
-  git add .
-  git commit -s -m $*
-  git push origin master
-}
-today.git.log(){
-  git log --oneline
 }
 today.help(){ printf "\e[1;37m%s\e[0m\e[1;36m%s\e[0m\n" "" "[$(today.methods)]"; }
 today.init(){
@@ -311,7 +231,7 @@ today.init(){
   ! test -z "$1" && project=$1
   today.list | grep $project &> /dev/null
   if test $? -ne 0 && test -d $TODAY_PROJECTS/$project; then
-    ln -sf $TODAY_PROJECTS/$project "$TODAY/$position $(date +'%Y-%m-%d') $project"
+    ln -sf $TODAY_PROJECTS/$project "$TODAY/$position $(date +%Y-%m-%d) $project"
   fi
 }
 today.jump(){
@@ -326,18 +246,12 @@ today.jump(){
 }
 today.list(){ ls -p $TODAY | grep -v /; }
 today.setup(){
-  export TODAY_UPDATE_MESSAGE="Add 'today.archivet' and 'scheduled.archive' to re-order projects in list methods."
-  export TODAY_VERSION=v1.0.2
-  export TODAY_VERSION_DATE=2022.01.10
+  export TODAY_UPDATE_MESSAGE=""
+  export TODAY_VERSION=v1.0.0
+  export TODAY_VERSION_DATE=2022.06.07
   
-  export TODAY_THINGS=$HOME/Things
-  
-  export TODAY_INBOX=$TODAY_THINGS/Inbox
-  export TODAY_LOGBOOK=$TODAY_THINGS/Logbook
-  export TODAY_PROJECTS=$TODAY_THINGS/Projects
-  export TODAY_SCHEDULED=$TODAY_THINGS/Scheduled
-  export TODAY_SOMEDAY=$TODAY_THINGS/Someday
-  export TODAY=$TODAY_THINGS/Today
+  export TODAY_PROJECTS=$HOME/Projects
+  export TODAY=$HOME/Today
   
   alias src='test -d src && cd src'
   alias tdya='today.archive'
@@ -346,25 +260,10 @@ today.setup(){
   alias tdyi='today.init'
   alias tdyj='today.jump'
   alias tdye='today.end'
-  alias tdysd='today.someday'
   
   alias tdp='_projects'
   alias tdpl='_projects.list'
   alias tdpn='_projects.new'
-  
-  alias tdl='_logbook'
-  alias tdll='_logbook.list'
-  
-  alias tdsd='_someday'
-  alias tdsdl='_someday.list'
-  alias tdsdi='_someday.init'
-  alias tdsdj='_someday.jump'
-  alias tdsde='_someday.end'
-  alias tdsdt='_someday.today'
-  
-  alias tdi='_inbox'
-  alias tdic='_inbox.collect'
-  alias tdil='_inbox.list'
   
   alias tds='_scheduled'
   alias tdsa='_scheduled.archive'
@@ -373,47 +272,12 @@ today.setup(){
   alias tdsj='_scheduled.jump'
   alias tdse='_scheduled.end'
   alias tdst='_scheduled.today'
-  alias tdssd='_scheduled.someday'
 
-  alias tdg='today.git.status'
-  alias tdgi='today.git.init'
-  alias tdge='today.git.end'
-  alias tdgl='today.git.log'
-
-  ! test -d $TODAY_THINGS && mkdir -p $TODAY_THINGS
-
-  ! test -d $TODAY_INBOX && mkdir -p $TODAY_INBOX
-  ! test -d $TODAY_LOGBOOK && mkdir -p $TODAY_LOGBOOK
   ! test -d $TODAY_PROJECTS && mkdir -p $TODAY_PROJECTS
-  ! test -d $TODAY_SCHEDULED && mkdir -p $TODAY_SCHEDULED
-  ! test -d $TODAY_SOMEDAY && mkdir -p $TODAY_SOMEDAY
   ! test -d $TODAY && mkdir -p $TODAY
-
-  ! test -L $HOME/Inbox && ln -sf $TODAY_INBOX $HOME/Inbox
-  ! test -L $HOME/Logbook && ln -sf $TODAY_LOGBOOK $HOME/Logbook
-  ! test -L $HOME/Projects && ln -sf $TODAY_PROJECTS $HOME/Projects
-  ! test -L $HOME/Someday && ln -sf $TODAY_SOMEDAY $HOME/Someday
-  ! test -L $HOME/Scheduled && ln -sf $TODAY_SCHEDULED $HOME/Scheduled
-  ! test -L $HOME/Today && ln -sf $TODAY $HOME/Today
-
-  if ! test -f $HOME/Projects/project-tag-manager/tag; then
-    printf " \e[0;31m%s \e[0m\n" "=>" "Tag is not installed."
-    exit 1
-  else 
-    source $HOME/Projects/project-tag-manager/tag
-  fi 
 
 # callbacks
   _scheduled.today 
-}
-today.someday(){
-  local project=$(_set_project $1)
-  today.list | grep $project &> /dev/null
-  if test $? -eq 0; then
-    _someday.init $project
-    project_name=$(today.list | grep $project | head -1)
-    rm -f "$TODAY/$project_name"
-  fi
 }
 today.version(){
   printf "\e[0;37m%s \e[0m%s\n" "Today" "$TODAY_VERSION"
