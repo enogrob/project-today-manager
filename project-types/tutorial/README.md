@@ -1,9 +1,4 @@
-```
-Roberto Nogueira  
-BSd EE, MSd CE
-Solution Integrator Experienced - Certified by Ericsson
-```
-# Tutorial project
+# Tutorial Name
 
 ![tutorial image](images/tutorial.png)
 
@@ -11,8 +6,8 @@ Solution Integrator Experienced - Certified by Ericsson
 
 Learn everything you need to about the subject of this `Tutorial` project.
 
-[Homepage](https://tutorial.com)
+[Homepage]()
 
-## Topics
-```
-```
+## Contents
+
+- []()

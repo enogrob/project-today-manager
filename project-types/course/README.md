@@ -1,9 +1,4 @@
-```
-Roberto Nogueira  
-BSd EE, MSd CE
-Solution Integrator Experienced - Certified by Ericsson
-```
-# Course project
+# Course Name
 
 ![course image](images/course.png)
 
@@ -11,8 +6,8 @@ Solution Integrator Experienced - Certified by Ericsson
 
 Learn everything you need to about the subject of this `Course` project.
 
-[Homepage](https://course.com)
+[Homepage]()
 
-## Topics
-```
-```
+## Contents
+
+- []()
