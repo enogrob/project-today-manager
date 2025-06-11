@@ -1,0 +1,1 @@
+I am going to have a Fit Cultural Interview for a Ruby on Rails job position. Could you gather all the relevant information about the underlying company entered in order to help me in this enterprise. Follows below the job description in #file:job-description.md inside #folder:src .
