@@ -150,7 +150,7 @@ today(){
       today.version
       ;;
     --help|-h|h|help)
-      printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2021 by Daitanlabs - We are stronger together"
+      printf "\e[1;37m%s \e[0m\n" "Crafted (c) 2025 by Zoatworks - We are stronger together"
       today.version
       printf "\e[1;37m%s \e[0m%s\n" "today" "$(today.help)" 
       printf "\e[1;37m%s \e[0m%s\n" "     " "[$(_projects.help)]" 
@@ -159,7 +159,7 @@ today(){
       printf "\e[1;37m%s \e[0m\n" "aliases"
       alias | grep "^alias td" | sed 's/^/  /g'
       printf "\n" 
-      printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager"
+      printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "http://github.com/enogrob/project-today-manager"
       printf "\n"
       ;;
   archive|end|help|init|jump|list|setup|version)

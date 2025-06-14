@@ -77,13 +77,14 @@ flowchart LR
 
 In order to install `Today Manager`, it is required that the following has been installed already:
 
-* [tree](http://manpages.ubuntu.com/manpages/trusty/man1/tree.1.html) for installing do `brew install tree`.
+* [tree](https://oldmanprogrammer.net/source.php?dir=projects/tree) for installing do `brew install tree`.
+* [tag](https://github.com/jdberry/tag) for installing do `brew install tag`.
 
 **For further help:**
 
 ```shell
 Crafted (c) 2025 by Zoatworks - We are stronger together 
-Today v1.0.0
+Today v1.0.1
 
 today [archive|end|help|init|list|setup|version]
       [projects [help|list|new]]
