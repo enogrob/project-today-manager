@@ -266,9 +266,10 @@ today.setup(){
   export TODAY_VERSION=v1.0.1
   export TODAY_VERSION_DATE=2025.06.13
   
-  export TODAY_PROJECTS=$HOME/Projects
-  export TODAY_PROJECT_HOME=$TODAY_PROJECTS/project-today-manager
   export TODAY=$HOME/Today
+  export TODAY_PROJECTS=$HOME/Projects
+  export TODAY_SCHEDULED=$HOME/Scheduled
+  export TODAY_PROJECT_HOME=$TODAY_PROJECTS/project-today-manager
   export TODAY_PROJECT_TYPES=("${(@f)$(ls -1 "$TODAY_PROJECT_HOME/project-types")}")
   
   alias src='test -d src && cd src'
@@ -291,8 +292,9 @@ today.setup(){
   alias tdse='_scheduled.end'
   alias tdst='_scheduled.today'
 
-  ! test -d $TODAY_PROJECTS && mkdir -p $TODAY_PROJECTS
   ! test -d $TODAY && mkdir -p $TODAY
+  ! test -d $TODAY_PROJECTS && mkdir -p $TODAY_PROJECTS
+  ! test -d $TODAY_SCHEDULED && mkdir -p $TODAY_SCHEDULED
 
 # callbacks
   _scheduled.today 
