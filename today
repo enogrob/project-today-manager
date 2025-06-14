@@ -36,11 +36,27 @@ _projects.list(){
 }
 _projects.new(){
   local project=$1
+  local project_type=$2
 
-  if [ "$PWD" == "$TODAY_INBOX" ]; then
-    ! test -d $TODAY_PROJECTS/$1 && mkdir -p $TODAY_PROJECTS/$1
-    mv * $TODAY_PROJECTS/$1
-    pushd $TODAY_PROJECTS/$1
+  test -z "$2" && project_type=project
+
+  # validate project_type against defined templates
+  if ! [[ " ${TODAY_PROJECT_TYPES[@]} " == *" $project_type "* ]]; then
+    printf " \e[0;31m%s \e[0m%s\n" "=>" "Invalid project type '$project_type'. Available types: ${TODAY_PROJECT_TYPES[*]}"
+    return 1
+  fi
+
+  if test -d $TODAY_PROJECT_HOME/project-types/$project_type; then
+    cp -r $TODAY_PROJECT_HOME/project-types/$project_type $TODAY_PROJECTS/$project
+    if ! test $? -eq 0; then
+      printf " \e[0;31m%s \e[0m%s\n" "=>" "Error creating project $project"
+    fi
+  fi
+  # only change into the new project directory if it was created
+  if test -d "$TODAY_PROJECTS/$project"; then
+    pushd "$TODAY_PROJECTS/$project"
+  else
+    return 1
   fi
 }
 
@@ -127,8 +143,8 @@ _scheduled.today(){
 
 # today
 today(){
-  local today_methods="+($(today.methods))"
-  local today_forward_methods="+($(today.forward_methods))"
+  local today_methods="$(today.methods)"
+  local today_forward_methods="$(today.forward_methods)"
   case $1 in
     --version|-v|v|version)
       today.version
@@ -146,20 +162,20 @@ today(){
       printf "\e[0;32m%s \e[4m%s\e[0m\e[0m\n" "homepage" "http://bitbucket.wrs.com/users/rmartins/repos/project-today-manager"
       printf "\n"
       ;;
-    $today_methods)
-      today.$1 ${@:2}
-      ;;
-    $today_forward_methods)
-      _$1 ${@:2}
-      ;;
-    *)
-      if [ -z "$1" ]; then
-        pushd $TODAY
-      else   
-        printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${1}"
-      fi  
-      ;;
-  esac
+  archive|end|help|init|jump|list|setup|version)
+    today.$1 ${@:2}
+    ;;
+  projects|scheduled)
+    _${1} ${@:2}
+    ;;
+   *)
+     if [ -z "$1" ]; then
+       pushd $TODAY
+     else   
+       printf " \e[0;31m%s \e[0m%s\n" "=>" "invalid parameter ${1}"
+     fi  
+     ;;
+ esac
 }
 today.methods(){ echo "archive|end|help|init|jump|list|setup|version"; }
 today.archive(){
@@ -215,7 +231,7 @@ today.print(){
   done   
   IFS="$saveIFS"
 }
-today.forward_methods(){ echo "inbox|logbook|projects|scheduled|someday"; }
+today.forward_methods(){ echo "projects|scheduled"; }
 today.end(){
   local project=$(_set_project $1)
   today.list | grep $project &> /dev/null
@@ -246,12 +262,14 @@ today.jump(){
 }
 today.list(){ ls -p $TODAY | grep -v /; }
 today.setup(){
-  export TODAY_UPDATE_MESSAGE=""
-  export TODAY_VERSION=v1.0.0
-  export TODAY_VERSION_DATE=2022.06.07
+  export TODAY_UPDATE_MESSAGE="'_projects.new' is working as expected"
+  export TODAY_VERSION=v1.0.1
+  export TODAY_VERSION_DATE=2025.06.13
   
   export TODAY_PROJECTS=$HOME/Projects
+  export TODAY_PROJECT_HOME=$TODAY_PROJECTS/project-today-manager
   export TODAY=$HOME/Today
+  export TODAY_PROJECT_TYPES=("${(@f)$(ls -1 "$TODAY_PROJECT_HOME/project-types")}")
   
   alias src='test -d src && cd src'
   alias tdya='today.archive'

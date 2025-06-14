@@ -124,6 +124,7 @@ popd
 **Changes log**
 
 * **1.0.0** Initial version.
+* **1.0.1** `_projects.new` is working as expected.
 
 **Refs:**
 * **[]()**
