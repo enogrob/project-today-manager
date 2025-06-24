@@ -84,7 +84,7 @@ In order to install `Today Manager`, it is required that the following has been 
 
 ```shell
 Crafted (c) 2025 by Zoatworks - We are stronger together 
-Today v1.0.1
+Today v1.0.2
 
 today [archive|end|help|init|list|setup|version]
       [projects [help|list|new]]
@@ -104,6 +104,7 @@ aliases
   alias tdy='today'
   alias tdya='today.archive'
   alias tdye='today.end'
+  alias tdyea='today.end.all'
   alias tdyi='today.init'
   alias tdyj='today.jump'
   alias tdyl='today.list'      
@@ -126,6 +127,7 @@ popd
 
 * **1.0.0** Initial version.
 * **1.0.1** `_projects.new` is working as expected.
+* **1.0.2** `today.archive` corrected and `today.end.all` designed.
 
 **Refs:**
 * **[]()**
