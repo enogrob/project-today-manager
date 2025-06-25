@@ -75,7 +75,10 @@ _scheduled.archive(){
     position=$(($position + 1))
     date=$(echo $p | awk '{print $2}')
     project=$(echo $p | awk '{print $3}')
-    mv "$TODAY_SCHEDULED/$p" "$TODAY_SCHEDULED/$position $date $project" 
+    # only rename if the source and target differ
+    if [ "$TODAY_SCHEDULED/$p" != "$TODAY_SCHEDULED/$position $date $project" ]; then
+      mv "$TODAY_SCHEDULED/$p" "$TODAY_SCHEDULED/$position $date $project" 
+    fi
   done   
   IFS="$saveIFS"
 }
