@@ -1,6 +1,7 @@
 ---
 mode: 'agent'
 ---
+Note: Ensure that there is exactly one blank line after each section title before the content (e.g., **Summary**\n\nYour text...).
 Generate the content for chapter # specified in #folder:contents according to the following rules and actions below, keep the content in this order with the titles:
 
 **Summary**
