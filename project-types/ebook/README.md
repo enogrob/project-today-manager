@@ -1,6 +1,6 @@
 # eBook project
 
-![ebook image](assets/ebook.png)
+![ebook image](images/ebook.png)
 
 **About**
 
