@@ -94,16 +94,17 @@ _scheduled.end(){
 _scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(_scheduled.methods)]"; }
 _scheduled.init(){
   local project=$(_set_project $1)
+  local tags=$2
   local position=$(($(tdsl | wc -l) + 1))
   ! test -z "$1" && project=$1
   _scheduled.list | grep $project &> /dev/null
   if test $? -ne 0 && test -d $TODAY_PROJECTS/$project; then
-    if test -z $2; then
+    if test -z $tags; then
       ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $(date +'%Y-%m-%d') $project"
     else
       saveIFS="$IFS"
       # parse ISO date on macOS
-      parsed_date=$(date -j -f "%Y-%m-%d" "$2" +"%Y-%m-%d")
+      parsed_date=$(date -j -f "%Y-%m-%d" "$tags" +"%Y-%m-%d")
       IFS="-"
       read Y m d <<< "$parsed_date"
       IFS="$saveIFS"
