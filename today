@@ -29,9 +29,9 @@ _projects.methods(){ echo "help|list|new"; }
 _projects.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "projects" "[$(_projects.methods)]"; }
 _projects.list(){ 
   if test -z $1; then
-    ls -l $TODAY_PROJECTS | awk '{print $9}'; 
+    ls -l $TODAY_PROJECTS | grep -v Icon | awk '{print $9}'; 
   else
-    ls -l $TODAY_PROJECTS | awk '{print $9}' | grep "$1"; 
+    ls -l $TODAY_PROJECTS | grep -v Icon | awk '{print $9}' | grep "$1"; 
   fi  
 }
 _projects.new(){
@@ -91,25 +91,70 @@ _scheduled.end(){
     rm -f "$TODAY_SCHEDULED/$project_name"
   fi
 }
+_scheduled.end.all(){ find $TODAY_SCHEDULED -type l -delete;}
 _scheduled.help(){ printf "\e[1;37m%s\e[0m \e[1;36m%s\e[0m\n" "scheduled" "[$(_scheduled.methods)]"; }
 _scheduled.init(){
   local project=$(_set_project $1)
   local tags=$2
   local position=$(($(tdsl | wc -l) + 1))
-  ! test -z "$1" && project=$1
   _scheduled.list | grep $project &> /dev/null
   if test $? -ne 0 && test -d $TODAY_PROJECTS/$project; then
     if test -z $tags; then
-      ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $(date +'%Y-%m-%d') $project"
+      tags=$(date +'%Y-%m-%d')
     else
-      saveIFS="$IFS"
-      # parse ISO date on macOS
-      parsed_date=$(date -j -f "%Y-%m-%d" "$tags" +"%Y-%m-%d")
-      IFS="-"
-      read Y m d <<< "$parsed_date"
-      IFS="$saveIFS"
-      ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $Y-$m-$d $project"
-    fi  
+      # Validate and process tags
+      local validated_tags=""
+      
+      # Check if tags is a valid ISO date (YYYY-MM-DD)
+      if [[ "$tags" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+        # Parse and validate the date
+        local parsed_date
+        parsed_date=$(date -j -f "%Y-%m-%d" "$tags" "+%Y-%m-%d" 2>/dev/null)
+        if [ $? -eq 0 ]; then
+          # Check if date is today or in the future
+          local input_timestamp=$(date -j -f "%Y-%m-%d" "$tags" "+%s" 2>/dev/null)
+          local today_timestamp=$(date "+%s")
+          local today_date=$(date "+%Y-%m-%d")
+          
+          if [ $input_timestamp -ge $(date -j -f "%Y-%m-%d" "$today_date" "+%s") ]; then
+            validated_tags="$parsed_date"
+          else
+            printf " \e[0;31m%s \e[0m%s\n" "=>" "Date '$tags' must be today or in the future"
+            return 1
+          fi
+        else
+          printf " \e[0;31m%s \e[0m%s\n" "=>" "Invalid date format '$tags'. Use YYYY-MM-DD"
+          return 1
+        fi
+      # Check for special keywords
+      elif [[ "$tags" == "daily" || "$tags" == "weekday" || "$tags" == "weekend" ]]; then
+        validated_tags="$tags"
+      # Check for day abbreviations (mon,tue,wed,thu,fri,sat,sun or combinations)
+      elif [[ "$tags" =~ ^(mon|tue|wed|thu|fri|sat|sun)(,(mon|tue|wed|thu|fri|sat|sun))*$ ]]; then
+        # Validate each day abbreviation
+        local valid_days="mon tue wed thu fri sat sun"
+        local day_list
+        IFS=',' read -A day_list <<< "$tags"
+        local invalid_day=false
+        
+        for day in "${day_list[@]}"; do
+          if [[ ! " $valid_days " == *" $day "* ]]; then
+            printf " \e[0;31m%s \e[0m%s\n" "=>" "Invalid day abbreviation '$day'. Use: mon,tue,wed,thu,fri,sat,sun"
+            return 1
+          fi
+        done
+        validated_tags="$tags"
+      else
+        printf " \e[0;31m%s \e[0m%s\n" "=>" "Invalid tags format '$tags'. Use: YYYY-MM-DD, daily, weekday, weekend, or day abbreviations (mon,tue,wed,thu,fri,sat,sun)"
+        return 1
+      fi
+      
+      tags="$validated_tags"
+    fi
+    
+    ln -sf $TODAY_PROJECTS/$project "$TODAY_SCHEDULED/$position $tags $project"
+  else
+    printf " \e[0;31m%s \e[0m%s\n" "=>" "'$project' is scheduled already or does not exist in '$TODAY_PROJECTS"
   fi
 }
 _scheduled.jump(){
@@ -122,25 +167,61 @@ _scheduled.jump(){
     pushd $TODAY_PROJECTS/$project
   fi
 }
-_scheduled.list(){ ls -p $TODAY_SCHEDULED | grep -v /; }
+_scheduled.list(){ ls -p $TODAY_SCHEDULED | grep -v Icon | sort -n -k1,1; }
 _scheduled.today(){
   local date_today=$(date +%s)
   local date_scheduled
+  local tags
+  local project
+  local today_dow=$(date +%u)  # 1=Monday, 7=Sunday
+  local today_date=$(date +%Y-%m-%d)
+  
   saveIFS="$IFS"
   IFS=$'\n'
   for p in "${(@f)$(_scheduled.list)}"; do
-      project=$(echo $p | awk '{print $3}')
-      date_project=$(echo $p | awk '{print $2}')
-    # only parse valid ISO dates, skip otherwise
-    if [[ "$date_project" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-      date_scheduled=$(date -j -f "%Y-%m-%d" "${date_project}" "+%s" 2>/dev/null) || date_scheduled=0
-    else
-      continue
-    fi
+    project=$(echo $p | awk '{print $3}')
+    tags=$(echo $p | awk '{print $2}')
+    
+    # Handle ISO dates (YYYY-MM-DD) - these should be removed after the date passes
+    if [[ "$tags" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+      date_scheduled=$(date -j -f "%Y-%m-%d" "${tags}" "+%s" 2>/dev/null) || date_scheduled=0
       if [ $date_today -ge $date_scheduled ]; then
         _scheduled.end $project
       fi
-    done   
+    # Handle recurring tags - these should trigger today.init but NOT be removed
+    elif [[ "$tags" == "daily" ]]; then
+      # Daily: always schedule for today
+      today.init $project
+    elif [[ "$tags" == "weekday" ]]; then
+      # Weekday: Monday(1) to Friday(5)
+      if [ $today_dow -ge 1 ] && [ $today_dow -le 5 ]; then
+        today.init $project
+      fi
+    elif [[ "$tags" == "weekend" ]]; then
+      # Weekend: Saturday(6) and Sunday(7)
+      if [ $today_dow -eq 6 ] || [ $today_dow -eq 7 ]; then
+        today.init $project
+      fi
+    # Handle specific day abbreviations
+    elif [[ "$tags" =~ ^(mon|tue|wed|thu|fri|sat|sun)(,(mon|tue|wed|thu|fri|sat|sun))*$ ]]; then
+      # Convert current day to abbreviation
+      local today_abbr
+      case $today_dow in
+        1) today_abbr="mon" ;;
+        2) today_abbr="tue" ;;
+        3) today_abbr="wed" ;;
+        4) today_abbr="thu" ;;
+        5) today_abbr="fri" ;;
+        6) today_abbr="sat" ;;
+        7) today_abbr="sun" ;;
+      esac
+      
+      # Check if today's abbreviation is in the tags list
+      if [[ ",$tags," == *",$today_abbr,"* ]]; then
+        today.init $project
+      fi
+    fi
+  done   
   IFS="$saveIFS"
 }
 
@@ -268,11 +349,11 @@ today.jump(){
     pushd $TODAY_PROJECTS/$project
   fi
 }
-today.list(){ ls -p $TODAY | grep -v /; }
+today.list(){ ls -p $TODAY | grep -v Icon | sort -n -k1,1; }
 today.setup(){
-  export TODAY_UPDATE_MESSAGE="'today.archive' corrected and 'tdoday.end.all' designed"
-  export TODAY_VERSION=v1.0.2
-  export TODAY_VERSION_DATE=2025.06.24
+  export TODAY_UPDATE_MESSAGE="'_schedule.init' and '_schedule.today' refactored"
+  export TODAY_VERSION=v1.0.3
+  export TODAY_VERSION_DATE=2025.06.28
   
   export TODAY=$HOME/Today
   export TODAY_PROJECTS=$HOME/Projects
@@ -288,6 +369,7 @@ today.setup(){
   alias tdyj='today.jump'
   alias tdye='today.end'
   alias tdyea='today.end.all'
+  alias tdyia='_scheduled.today > /dev/null 2>&1'
   
   alias tdp='_projects'
   alias tdpl='_projects.list'
@@ -299,14 +381,14 @@ today.setup(){
   alias tdsi='_scheduled.init'
   alias tdsj='_scheduled.jump'
   alias tdse='_scheduled.end'
-  alias tdst='_scheduled.today'
+  alias tdsea='_scheduled.end.all'
 
   ! test -d $TODAY && mkdir -p $TODAY
   ! test -d $TODAY_PROJECTS && mkdir -p $TODAY_PROJECTS
   ! test -d $TODAY_SCHEDULED && mkdir -p $TODAY_SCHEDULED
 
 # callbacks
-  _scheduled.today 
+  _scheduled.today > /dev/null 2>&1 
 }
 today.version(){
   printf "\e[0;37m%s \e[0m%s\n" "Today" "$TODAY_VERSION"
