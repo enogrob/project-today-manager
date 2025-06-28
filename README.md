@@ -105,11 +105,6 @@ flowchart TD
   START((Start)) -->|begin| A
   L -->|cycle| START
   K -->|continue| H
-
-  class A,B,C,D,E,F,G,H,I,J,K,L,M,N,START hand
-  class D,E,F,G,M,N scheduled
-  class H,I,J,K,L today
-  class A,B,C projects
 ```
 
 **For further help:**
