@@ -61,7 +61,7 @@ _projects.new(){
 }
 
 _scheduled(){ pushd $TODAY_SCHEDULED; }
-_scheduled.methods(){ echo "archive|end|help|init|jump|list|today"; }
+_scheduled.methods(){ echo "archive|end|help|init|jump|list|print|today"; }
 _scheduled.archive(){
   local position
   local date
@@ -168,6 +168,17 @@ _scheduled.jump(){
   fi
 }
 _scheduled.list(){ ls -p $TODAY_SCHEDULED | grep -v Icon | sort -n -k1,1; }
+_scheduled.print(){ 
+  local saveIFS="$IFS"
+  IFS=$'\n'
+  for p in ${(@f)$(_scheduled.list)}; do
+    local position=$(echo $p | awk '{print $1}')
+    local tags=$(echo $p | awk '{print $2}')
+    local project=$(echo $p | awk '{print $3}')
+    printf "\e[0;37m%s \e[0;32m%s \e[1;1;95m%s\e[0m\n" "$position" "$tags" "$project"
+  done
+  IFS="$saveIFS"
+}
 _scheduled.today(){
   local date_today=$(date +%s)
   local date_scheduled
@@ -262,7 +273,7 @@ today(){
      ;;
  esac
 }
-today.methods(){ echo "archive|end|help|init|jump|list|setup|version"; }
+today.methods(){ echo "archive|end|help|init|jump|list|print|setup|version"; }
 today.archive(){
   local position
   local date
@@ -350,6 +361,17 @@ today.jump(){
   fi
 }
 today.list(){ ls -p $TODAY | grep -v Icon | sort -n -k1,1; }
+today.print(){ 
+  local saveIFS="$IFS"
+  IFS=$'\n'
+  for p in ${(@f)$(today.list)}; do
+    local position=$(echo $p | awk '{print $1}')
+    local tags=$(echo $p | awk '{print $2}')
+    local project=$(echo $p | awk '{print $3}')
+    printf "\e[0;37m%s \e[0;32m%s \e[1;1;95m%s\e[0m\n" "$position" "$tags" "$project"
+  done
+  IFS="$saveIFS"
+}
 today.setup(){
   export TODAY_UPDATE_MESSAGE="'_schedule.init' and '_schedule.today' refactored"
   export TODAY_VERSION=v1.0.3
@@ -364,7 +386,7 @@ today.setup(){
   alias src='test -d src && cd src'
   alias tdya='today.archive'
   alias tdy='today'
-  alias tdyl='today.list'
+  alias tdyl='today.print'
   alias tdyi='today.init'
   alias tdyj='today.jump'
   alias tdye='today.end'
@@ -377,7 +399,7 @@ today.setup(){
   
   alias tds='_scheduled'
   alias tdsa='_scheduled.archive'
-  alias tdsl='_scheduled.list'
+  alias tdsl='_scheduled.print'
   alias tdsi='_scheduled.init'
   alias tdsj='_scheduled.jump'
   alias tdse='_scheduled.end'
