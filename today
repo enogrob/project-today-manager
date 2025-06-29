@@ -386,9 +386,6 @@ today.setup(){
   ! test -d $TODAY && mkdir -p $TODAY
   ! test -d $TODAY_PROJECTS && mkdir -p $TODAY_PROJECTS
   ! test -d $TODAY_SCHEDULED && mkdir -p $TODAY_SCHEDULED
-
-# callbacks
-  _scheduled.today > /dev/null 2>&1 
 }
 today.version(){
   printf "\e[0;37m%s \e[0m%s\n" "Today" "$TODAY_VERSION"
