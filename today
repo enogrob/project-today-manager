@@ -384,7 +384,7 @@ today.setup(){
   export TODAY_PROJECT_TYPES=("${(@f)$(ls -1 "$TODAY_PROJECT_HOME/project-types")}")
   
   alias src='test -d src && cd src'
-  alias tdya='today.archive'
+  alias tdya='today.archive;tdyl'
   alias tdy='today'
   alias tdyl='today.print'
   alias tdyi='today.init'
