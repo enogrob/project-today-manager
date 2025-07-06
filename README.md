@@ -94,7 +94,8 @@ graph TD
 
 #### Alternative Perspectives
 
-**1. Class Diagram - Structural Relationships**
+<details>
+<summary><strong>1. Class Diagram - Structural Relationships</strong> (Click to expand)</summary>
 
 ```mermaid
 classDiagram
@@ -161,7 +162,10 @@ classDiagram
     ProjectsModule "1" --> "*" TodayModule : activates
 ```
 
-**2. Journey Process - State Transitions**
+</details>
+
+<details>
+<summary><strong>2. Journey Process - State Transitions</strong> (Click to expand)</summary>
 
 ```mermaid
 stateDiagram-v2
@@ -196,7 +200,10 @@ stateDiagram-v2
     DateScheduled --> [*]: Date-based items auto-removed
 ```
 
-**3. Mind Map - Interconnected Themes**
+</details>
+
+<details>
+<summary><strong>3. Mind Map - Interconnected Themes</strong> (Click to expand)</summary>
 
 ```mermaid
 mindmap
@@ -240,6 +247,8 @@ mindmap
       Recurring Maintenance
       Background Tasks
 ```
+
+</details>
 
 #### Key Concepts
 
