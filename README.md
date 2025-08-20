@@ -106,7 +106,7 @@ graph TD
 ```mermaid
 classDiagram
   class TodayManager {
-    <<(🌞,#fce4ec) TodayManager>>
+    TodayManager 🌞
     +String TODAY_VERSION
     +String TODAY_HOME
     +String TODAY_PROJECTS
@@ -117,14 +117,14 @@ classDiagram
     +help()
   }
   class ProjectsModule {
-    <<(📂,#e3f2fd) ProjectsModule>>
+    ProjectsModule 📂
     +list(filter)
     +new(name, type)
     +validateType(type)
     +getTemplates()
   }
   class ScheduledModule {
-    <<(🗓️,#f1f8e9) ScheduledModule>>
+    ScheduledModule 🗓️
     +init(project, tags)
     +list()
     +archive()
@@ -134,7 +134,7 @@ classDiagram
     +processRecurring()
   }
   class TodayModule {
-    <<(🌞,#fffde7) TodayModule>>
+    TodayModule 🌞
     +init(project)
     +list()
     +jump(identifier)
@@ -143,14 +143,14 @@ classDiagram
     +print()
   }
   class FileSystemInterface {
-    <<(🗄️,#ede7f6) FileSystemInterface>>
+    FileSystemInterface 🗄️
     +createSymlink(source, target)
     +removeSymlink(path)
     +listDirectory(path)
     +validatePath(path)
   }
   class ScheduleValidator {
-    <<(🔎,#fff3e0) ScheduleValidator>>
+    ScheduleValidator 🔎
     +validateISODate(date)
     +validateRecurring(pattern)
     +validateDayAbbrev(days)
