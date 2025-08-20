@@ -28,68 +28,74 @@ What makes this project particularly compelling is its object-oriented bash appr
 ### Architecture
 
 ```mermaid
+%% Pastel colors and emoticons for clarity and friendliness
 graph TD
-    A[User Input] --> B{Command Parser}
-    B -->|projects| C[Projects Module]
-    B -->|scheduled| D[Scheduled Module]
-    B -->|today| E[Today Module]
-    B -->|help/version| F[Core Functions]
-    
-    subgraph "File System Layer"
-        G[~/Projects]
-        H[~/Scheduled]
-        I[~/Today]
-        J[Project Templates]
-    end
-    
-    subgraph "Projects Management"
-        C --> K[List Projects]
-        C --> L[Create New Project]
-        L --> J
-        K --> G
-        L --> G
-    end
-    
-    subgraph "Scheduling System"
-        D --> M[Schedule Item]
-        D --> N[List Scheduled]
-        D --> O[Process Scheduled → Today]
-        M --> P{Validate Schedule Type}
-        P -->|ISO Date| Q[Date Validation]
-        P -->|Recurring| R[Pattern Validation]
-        P -->|Day Names| S[Day Abbreviation Check]
-        Q --> H
-        R --> H
-        S --> H
-        O --> T[Auto-Migration Logic]
-    end
-    
-    subgraph "Today Workflow"
-        E --> U[List Today's Tasks]
-        E --> V[Jump to Project]
-        E --> W[End Task]
-        E --> X[Archive Today]
-        T --> I
-        U --> I
-        V --> G
-        W --> I
-        X --> I
-    end
-    
-    subgraph "Daily Automation"
-        Y[Cron/Manual Trigger]
-        Y --> O
-        O --> Z{Schedule Type}
-        Z -->|Date-based| AA[Remove After Date]
-        Z -->|Recurring| BB[Keep Active]
-        AA --> H
-        BB --> H
-    end
-    
-    style G fill:#e8f5e8
-    style H fill:#e1f5fe
-    style I fill:#f3e5f5
-    style J fill:#fff3e0
+  A["🧑‍💻 User Input"] --> B{"🧩 Command Parser"}
+  B -->|"📁 projects"| C["📂 Projects Module"]
+  B -->|"⏰ scheduled"| D["🗓️ Scheduled Module"]
+  B -->|"📅 today"| E["🌞 Today Module"]
+  B -->|"❓ help/version"| F["🛠️ Core Functions"]
+
+  subgraph "File System Layer 🗄️"
+    G["📁 ~/Projects"]
+    H["📅 ~/Scheduled"]
+    I["🌞 ~/Today"]
+    J["🧩 Project Templates"]
+  end
+
+  subgraph "Projects Management 🗂️"
+    C --> K["🔍 List Projects"]
+    C --> L["✨ Create New Project"]
+    L --> J
+    K --> G
+    L --> G
+  end
+
+  subgraph "Scheduling System ⏳"
+    D --> M["📝 Schedule Item"]
+    D --> N["📋 List Scheduled"]
+    D --> O["➡️ Process Scheduled → Today"]
+    M --> P{"🔎 Validate Schedule Type"}
+    P -->|"📆 ISO Date"| Q["📅 Date Validation"]
+    P -->|"🔁 Recurring"| R["🔄 Pattern Validation"]
+    P -->|"📅 Day Names"| S["🔤 Day Abbreviation Check"]
+    Q --> H
+    R --> H
+    S --> H
+    O --> T["🤖 Auto-Migration Logic"]
+  end
+
+  subgraph "Today Workflow 🌞"
+    E --> U["📋 List Today's Tasks"]
+    E --> V["🚀 Jump to Project"]
+    E --> W["✅ End Task"]
+    E --> X["📦 Archive Today"]
+    T --> I
+    U --> I
+    V --> G
+    W --> I
+    X --> I
+  end
+
+  subgraph "Daily Automation 🔄"
+    Y["⏰ Cron/Manual Trigger"]
+    Y --> O
+    O --> Z{"🗓️ Schedule Type"}
+    Z -->|"📆 Date-based"| AA["🗑️ Remove After Date"]
+    Z -->|"🔁 Recurring"| BB["♻️ Keep Active"]
+    AA --> H
+    BB --> H
+  end
+
+  %% Pastel color styles
+  style G fill:#fce4ec,stroke:#f8bbd0,stroke-width:2px
+  style H fill:#e1f5fe,stroke:#b3e5fc,stroke-width:2px
+  style I fill:#f3e5f5,stroke:#ce93d8,stroke-width:2px
+  style J fill:#fff3e0,stroke:#ffe0b2,stroke-width:2px
+  style C fill:#e3f2fd,stroke:#90caf9,stroke-width:2px
+  style D fill:#f1f8e9,stroke:#aed581,stroke-width:2px
+  style E fill:#fffde7,stroke:#fff59d,stroke-width:2px
+  style F fill:#ede7f6,stroke:#b39ddb,stroke-width:2px
 ```
 
 #### Alternative Perspectives
@@ -99,67 +105,67 @@ graph TD
 
 ```mermaid
 classDiagram
-    class TodayManager {
-        +String TODAY_VERSION
-        +String TODAY_HOME
-        +String TODAY_PROJECTS
-        +String TODAY_SCHEDULED
-        +Array TODAY_PROJECT_TYPES
-        +setup()
-        +version()
-        +help()
-    }
-    
-    class ProjectsModule {
-        +list(filter)
-        +new(name, type)
-        +validateType(type)
-        +getTemplates()
-    }
-    
-    class ScheduledModule {
-        +init(project, tags)
-        +list()
-        +archive()
-        +end(project)
-        +today()
-        +validateTags(tags)
-        +processRecurring()
-    }
-    
-    class TodayModule {
-        +init(project)
-        +list()
-        +jump(identifier)
-        +end(project)
-        +archive()
-        +print()
-    }
-    
-    class FileSystemInterface {
-        +createSymlink(source, target)
-        +removeSymlink(path)
-        +listDirectory(path)
-        +validatePath(path)
-    }
-    
-    class ScheduleValidator {
-        +validateISODate(date)
-        +validateRecurring(pattern)
-        +validateDayAbbrev(days)
-        +isFutureDate(date)
-    }
-    
-    TodayManager "1" --> "1" ProjectsModule
-    TodayManager "1" --> "1" ScheduledModule
-    TodayManager "1" --> "1" TodayModule
-    ProjectsModule --> FileSystemInterface
-    ScheduledModule --> FileSystemInterface
-    TodayModule --> FileSystemInterface
-    ScheduledModule --> ScheduleValidator
-    ScheduledModule "1" --> "*" TodayModule : migrates_to
-    ProjectsModule "1" --> "*" ScheduledModule : schedules
-    ProjectsModule "1" --> "*" TodayModule : activates
+  class TodayManager {
+    <<(🌞,#fce4ec) TodayManager>>
+    +String TODAY_VERSION
+    +String TODAY_HOME
+    +String TODAY_PROJECTS
+    +String TODAY_SCHEDULED
+    +Array TODAY_PROJECT_TYPES
+    +setup()
+    +version()
+    +help()
+  }
+  class ProjectsModule {
+    <<(📂,#e3f2fd) ProjectsModule>>
+    +list(filter)
+    +new(name, type)
+    +validateType(type)
+    +getTemplates()
+  }
+  class ScheduledModule {
+    <<(🗓️,#f1f8e9) ScheduledModule>>
+    +init(project, tags)
+    +list()
+    +archive()
+    +end(project)
+    +today()
+    +validateTags(tags)
+    +processRecurring()
+  }
+  class TodayModule {
+    <<(🌞,#fffde7) TodayModule>>
+    +init(project)
+    +list()
+    +jump(identifier)
+    +end(project)
+    +archive()
+    +print()
+  }
+  class FileSystemInterface {
+    <<(🗄️,#ede7f6) FileSystemInterface>>
+    +createSymlink(source, target)
+    +removeSymlink(path)
+    +listDirectory(path)
+    +validatePath(path)
+  }
+  class ScheduleValidator {
+    <<(🔎,#fff3e0) ScheduleValidator>>
+    +validateISODate(date)
+    +validateRecurring(pattern)
+    +validateDayAbbrev(days)
+    +isFutureDate(date)
+  }
+  TodayManager "1" --> "1" ProjectsModule
+  TodayManager "1" --> "1" ScheduledModule
+  TodayManager "1" --> "1" TodayModule
+  ProjectsModule --> FileSystemInterface
+  ScheduledModule --> FileSystemInterface
+  TodayModule --> FileSystemInterface
+  ScheduledModule --> ScheduleValidator
+  ScheduledModule "1" --> "*" TodayModule : migrates_to
+  ProjectsModule "1" --> "*" ScheduledModule : schedules
+  ProjectsModule "1" --> "*" TodayModule : activates
 ```
 
 </details>
@@ -169,35 +175,27 @@ classDiagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> ProjectCreation: User wants new project
-    ProjectCreation --> ProjectExists: tdpn project_name type
-    ProjectExists --> SchedulingDecision: Project ready
-    
-    SchedulingDecision --> ImmediateWork: Work now
-    SchedulingDecision --> FutureScheduling: Schedule for later
-    
-    ImmediateWork --> TodayActive: tdyi project_name
-    
-    FutureScheduling --> DateScheduled: tdsi project_name YYYY-MM-DD
-    FutureScheduling --> RecurringScheduled: tdsi project_name daily/weekday/weekend
-    FutureScheduling --> DayScheduled: tdsi project_name mon,tue,fri
-    
-    DateScheduled --> ScheduledList: Waiting
-    RecurringScheduled --> ScheduledList: Waiting
-    DayScheduled --> ScheduledList: Waiting
-    
-    ScheduledList --> TodayActive: tdyia (auto-migration)
-    
-    TodayActive --> WorkInProgress: tdyj N (jump to project)
-    WorkInProgress --> TodayActive: Continue working
-    WorkInProgress --> Completed: tdye project_name
-    
-    Completed --> Archived: tdya (archive)
-    Archived --> [*]: Day complete
-    
-    TodayActive --> Archived: End of day
-    ScheduledList --> ScheduledList: Recurring items remain
-    DateScheduled --> [*]: Date-based items auto-removed
+  [*] --> ProjectCreation: "✨ User wants new project"
+  ProjectCreation --> ProjectExists: "🆕 tdpn project_name type"
+  ProjectExists --> SchedulingDecision: "🔀 Project ready"
+  SchedulingDecision --> ImmediateWork: "🚀 Work now"
+  SchedulingDecision --> FutureScheduling: "⏳ Schedule for later"
+  ImmediateWork --> TodayActive: "🌞 tdyi project_name"
+  FutureScheduling --> DateScheduled: "📆 tdsi project_name YYYY-MM-DD"
+  FutureScheduling --> RecurringScheduled: "🔁 tdsi project_name daily/weekday/weekend"
+  FutureScheduling --> DayScheduled: "📅 tdsi project_name mon,tue,fri"
+  DateScheduled --> ScheduledList: "⏱️ Waiting"
+  RecurringScheduled --> ScheduledList: "⏱️ Waiting"
+  DayScheduled --> ScheduledList: "⏱️ Waiting"
+  ScheduledList --> TodayActive: "🤖 tdyia (auto-migration)"
+  TodayActive --> WorkInProgress: "🚀 tdyj N (jump to project)"
+  WorkInProgress --> TodayActive: "🔄 Continue working"
+  WorkInProgress --> Completed: "✅ tdye project_name"
+  Completed --> Archived: "📦 tdya (archive)"
+  Archived --> [*]: "🏁 Day complete"
+  TodayActive --> Archived: "🌙 End of day"
+  ScheduledList --> ScheduledList: "🔁 Recurring items remain"
+  DateScheduled --> [*]: "🗑️ Date-based items auto-removed"
 ```
 
 </details>
@@ -207,45 +205,45 @@ stateDiagram-v2
 
 ```mermaid
 mindmap
-  root((Zsh Today Manager))
-    GTD Philosophy
-      Getting Things Done
-      File System Workflow
-      Transparency
-      Developer Friendly
-    Project Management
-      Portfolio View
-      Template System
-      Type Categorization
-      Creation Workflow
-    Scheduling Intelligence
-      ISO Date Support
-      Recurring Patterns
-      Day Abbreviations
-      Auto Migration
-      Future Validation
-    Daily Workflow
-      Today's Focus
-      Task Navigation
-      Completion Tracking
-      Archive System
-    Technical Excellence
-      Zsh Integration
-      Object Oriented Bash
-      Symbolic Links
-      Directory Structure
-      Alias System
-    User Experience
-      CLI Simplicity
-      Color Coding
-      Clear Feedback
-      Error Handling
-      Help System
-    Automation
-      Daily Processing
-      Scheduled Migration
-      Recurring Maintenance
-      Background Tasks
+  root((🌞 Zsh Today Manager))
+    GTD Philosophy 🧠
+      Getting Things Done ✅
+      File System Workflow 🗄️
+      Transparency 👁️
+      Developer Friendly 👨‍💻
+    Project Management 🗂️
+      Portfolio View 📂
+      Template System 🧩
+      Type Categorization 🏷️
+      Creation Workflow ✨
+    Scheduling Intelligence ⏳
+      ISO Date Support 📆
+      Recurring Patterns 🔁
+      Day Abbreviations 📅
+      Auto Migration 🤖
+      Future Validation 🔮
+    Daily Workflow 🌞
+      Today's Focus 🎯
+      Task Navigation 🚀
+      Completion Tracking ✅
+      Archive System 📦
+    Technical Excellence 🏆
+      Zsh Integration 🐚
+      Object Oriented Bash 🧑‍💻
+      Symbolic Links 🔗
+      Directory Structure 🗂️
+      Alias System 🏷️
+    User Experience 😊
+      CLI Simplicity 💻
+      Color Coding 🎨
+      Clear Feedback 💬
+      Error Handling ⚠️
+      Help System 🆘
+    Automation 🤖
+      Daily Processing 🔄
+      Scheduled Migration ⏩
+      Recurring Maintenance ♻️
+      Background Tasks 💤
 ```
 
 </details>
