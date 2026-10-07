@@ -1,5 +1,7 @@
 # Zsh Today Manager
 
+![](images/today-manager-infographic.webp)
+
 A file-system-based workflow for managing projects, today's focus, and scheduled work. The implementation and project templates are in [`src/zsh-today-manager`](src/zsh-today-manager).
 
 ## Contents
