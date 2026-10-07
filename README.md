@@ -5,6 +5,7 @@ A file-system-based workflow for managing projects, today's focus, and scheduled
 ## Contents
 
 - [Implementations](#implementations)
+- [Architecture](#architecture)
 - [Workflow](#workflow)
 - [Getting Started](#getting-started)
 - [Commands](#commands)
@@ -16,10 +17,66 @@ The manager represents Today and Scheduled entries as symbolic links to project 
 ## Implementations
 
 - [`today.zsh`](src/zsh-today-manager/today.zsh) is the legacy Zsh implementation and the target of the default `today` symlink. Sourcing it runs `today.setup` and defines the functions and aliases.
-- [`today-next.zsh`](src/zsh-today-manager/today-next.zsh) is an experimental Zsh dispatch and reflection layer. It sources `today`, then enables commands such as `today projects list`, `today scheduled list`, and `today methods`.
+- [`today-next.zsh`](src/zsh-today-manager/today-next.zsh) is a separate experimental Zsh implementation with command dispatch and reflection, exposing commands such as `today projects list`, `today scheduled list`, and `today methods`.
 - [`today.sh`](src/zsh-today-manager/today.sh) is a separate Bash implementation. It requires Bash 4 or later and GNU `date -d`; the Bash 3.2 and BSD `date` included with macOS do not meet those requirements.
 
 The Zsh scheduler uses the macOS/BSD `date -j -f` interface. The scripts initialize `~/Today`, `~/Projects`, and `~/Scheduled`. Project templates are read from `~/Projects/zsh-today-manager/project-types`, so the source directory must be available at that path (or through a symlink there). The legacy Zsh implementation also supports projects under `~/Apps` for Today entries.
+
+## Architecture
+
+The Zsh and Bash implementations are separate shell entry points over the same filesystem workflow. Projects remain in `~/Projects`; Today and Scheduled contain symlinks to those project directories. The Zsh implementations use macOS/BSD `date`, while the Bash implementation expects GNU `date`.
+
+```mermaid
+flowchart TD
+  user["👤 User"]
+
+  subgraph shells["🖥️ Shell implementations"]
+    zshLegacy["⌨️ Zsh · today.zsh"]
+    zshNext["🧩 Zsh · today-next.zsh"]
+    bash["⌨️ Bash · today.sh"]
+  end
+
+  subgraph filesystem["🗂️ Local filesystem"]
+    templates[("📚 Project templates")]
+    projects[("📁 ~/Projects")]
+    today[("📅 ~/Today")]
+    scheduled[("🗓️ ~/Scheduled")]
+    apps[("🧰 ~/Apps (optional)")]
+  end
+
+  subgraph dateTools["🕒 Host date utilities"]
+    bsdDate["macOS/BSD date"]
+    gnuDate["GNU date"]
+  end
+
+  user -->|source and invoke| zshLegacy
+  user -->|source and invoke| zshNext
+  user -->|run| bash
+
+  zshLegacy -->|read and write| projects
+  zshLegacy -->|manage links| today
+  zshLegacy -->|manage links| scheduled
+  zshNext -->|read and write| projects
+  zshNext -->|manage links| today
+  zshNext -->|manage links| scheduled
+  bash -->|read and write| projects
+  bash -->|manage links| today
+  bash -->|manage links| scheduled
+
+  templates -->|copied to create projects| projects
+  projects -->|symlink targets| today
+  projects -->|symlink targets| scheduled
+  apps -->|optional Today targets| today
+
+  zshLegacy -->|date -j -f| bsdDate
+  zshNext -->|date -j -f| bsdDate
+  bash -->|date -d| gnuDate
+
+  classDef context fill:#D9EAF7,stroke:#7AA6C2,color:#3E342C,stroke-width:2px;
+  classDef orchestration fill:#DDE3F4,stroke:#8998C8,color:#3E342C,stroke-width:2px;
+  class templates,projects,today,scheduled,apps,bsdDate,gnuDate context;
+  class zshLegacy,zshNext,bash orchestration;
+```
 
 ## Workflow
 
@@ -47,21 +104,20 @@ flowchart LR
   classDef data fill:#DDF2E1,stroke:#3F6B4F,color:#1E3324;
   class user actor;
   class templates,projects,today,scheduled data;
-  style storage fill:#EEF8F0,stroke:#3F6B4F,color:#1E3324;
-  linkStyle default stroke:#52606D,stroke-width:1.5px;
+  style storage fill:#D9EAF7,stroke:#7AA6C2,color:#3E342C,stroke-width:2px;
 ```
 
 Scheduled tags can be an ISO date (`YYYY-MM-DD`), `daily`, `weekday`, `weekend`, or comma-separated weekday abbreviations (`mon` through `sun`). Dates before today and invalid tags are rejected. Processing a due date creates a Today entry and removes its Scheduled link; matching recurring rules create a Today entry while remaining scheduled.
 
 ```mermaid
 flowchart LR
-  entry[("🔗 Scheduled entry")]
+  entry["🔗 Scheduled entry"]
   dueDate{"📅 Date due?"}
   recurrenceMatch{"🔁 Rule matches today?"}
   activateDate["🛠️ today.init adds Today link"]
   removeDate["🗑️ Remove dated link"]
   activateRecurring["🛠️ today.init adds Today link"]
-  keepScheduled[("♻️ Keep Scheduled link")]
+  keepScheduled["♻️ Keep Scheduled link"]
 
   entry -->|ISO date| dueDate
   entry -->|recurring tag| recurrenceMatch
@@ -72,13 +128,6 @@ flowchart LR
   recurrenceMatch -->|no| keepScheduled
   activateRecurring --> keepScheduled
 
-  classDef process fill:#DCEBFA,stroke:#355C7D,color:#1E293B;
-  classDef data fill:#DDF2E1,stroke:#3F6B4F,color:#1E3324;
-  classDef decision fill:#FFF1C9,stroke:#80641D,color:#3D3217;
-  class activateDate,removeDate,activateRecurring process;
-  class entry,keepScheduled data;
-  class dueDate,recurrenceMatch decision;
-  linkStyle default stroke:#52606D,stroke-width:1.5px;
 ```
 
 `today.init` avoids adding a duplicate Today link for a project already listed there. The `tdyia` alias runs schedule processing silently; `tdyl` lists Today entries.
