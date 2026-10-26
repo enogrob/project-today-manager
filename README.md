@@ -29,26 +29,27 @@ The Zsh scheduler uses the macOS/BSD `date -j -f` interface. The scripts initial
 The Zsh and Bash implementations are separate shell entry points over the same filesystem workflow. Projects remain in `~/Projects`; Today and Scheduled contain symlinks to those project directories. The Zsh implementations use macOS/BSD `date`, while the Bash implementation expects GNU `date`.
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "13px"}, "flowchart": {"wrappingWidth": 200, "minNodeWidth": 0, "padding": 8}}}%%
 flowchart TD
-  user["👤 User"]
+  user(["👤 User"])
 
   subgraph shells["🖥️ Shell implementations"]
-    zshLegacy["⌨️ Zsh · today.zsh"]
-    zshNext["🧩 Zsh · today-next.zsh"]
-    bash["⌨️ Bash · today.sh"]
+    zshLegacy(["⌨️ Zsh · today.zsh"])
+    zshNext(["🧩 Zsh · today-next.zsh"])
+    bash(["⌨️ Bash · today.sh"])
   end
 
   subgraph filesystem["🗂️ Local filesystem"]
-    templates[("📚 Project templates")]
-    projects[("📁 ~/Projects")]
-    today[("📅 ~/Today")]
-    scheduled[("🗓️ ~/Scheduled")]
-    apps[("🧰 ~/Apps (optional)")]
+    templates(["📚 Project templates"])
+    projects(["📁 ~/Projects"])
+    today(["📅 ~/Today"])
+    scheduled(["🗓️ ~/Scheduled"])
+    apps(["🧰 ~/Apps (optional)"])
   end
 
   subgraph dateTools["🕒 Host date utilities"]
-    bsdDate["macOS/BSD date"]
-    gnuDate["GNU date"]
+    bsdDate(["🕒 macOS/BSD date"])
+    gnuDate(["🕒 GNU date"])
   end
 
   user -->|source and invoke| zshLegacy
@@ -74,10 +75,14 @@ flowchart TD
   zshNext -->|date -j -f| bsdDate
   bash -->|date -d| gnuDate
 
-  classDef context fill:#D9EAF7,stroke:#7AA6C2,color:#3E342C,stroke-width:2px;
-  classDef orchestration fill:#DDE3F4,stroke:#8998C8,color:#3E342C,stroke-width:2px;
-  class templates,projects,today,scheduled,apps,bsdDate,gnuDate context;
-  class zshLegacy,zshNext,bash orchestration;
+  classDef actor fill:#E3D1F2,stroke:#8050A1,color:#3E342C,stroke-width:2px;
+  classDef implementation fill:#CDEEE4,stroke:#317C6B,color:#3E342C,stroke-width:2px;
+  classDef storage fill:#D6EAF8,stroke:#496F91,color:#3E342C,stroke-width:2px;
+  classDef utility fill:#FFDDBD,stroke:#9D5D27,color:#3E342C,stroke-width:2px;
+  class user actor;
+  class zshLegacy,zshNext,bash implementation;
+  class templates,projects,today,scheduled,apps storage;
+  class bsdDate,gnuDate utility;
 ```
 
 ## Workflow
@@ -85,41 +90,45 @@ flowchart TD
 Creating a project copies a selected template into `~/Projects`. Initializing Today or Scheduled creates a symlink to an existing project; ending an entry removes the symlink rather than deleting the project.
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "13px"}, "flowchart": {"wrappingWidth": 200, "minNodeWidth": 0, "padding": 8}}}%%
 flowchart LR
-  user["👤 User"]
+  user(["👤 User"])
 
   subgraph storage["🗄️ Project and workflow storage"]
-    templates[("📚 project-types templates")]
-    projects[("📁 ~/Projects")]
-    today[("📅 ~/Today")]
-    scheduled[("🗓️ ~/Scheduled")]
+    templates(["📚 Project templates"])
+    projects(["📁 ~/Projects"])
+    today(["📅 ~/Today"])
+    scheduled(["🗓️ ~/Scheduled"])
   end
 
-  user -->|tdpn selects a template| templates
-  templates -->|copied to create project| projects
+  user -->|tdpn selects template| templates
+  templates -->|creates project| projects
   user -->|tdyi / today.init| today
-  projects -->|source of project link| today
+  projects -->|project link target| today
   user -->|tdsi / _scheduled.init| scheduled
-  projects -->|source of scheduled link| scheduled
+  projects -->|scheduled link target| scheduled
 
-  classDef actor fill:#FBE4F0,stroke:#8E496D,color:#3F2434;
-  classDef data fill:#DDF2E1,stroke:#3F6B4F,color:#1E3324;
+  classDef actor fill:#E3D1F2,stroke:#8050A1,color:#3E342C,stroke-width:2px;
+  classDef storageItem fill:#D6EAF8,stroke:#496F91,color:#3E342C,stroke-width:2px;
   class user actor;
-  class templates,projects,today,scheduled data;
-  style storage fill:#D9EAF7,stroke:#7AA6C2,color:#3E342C,stroke-width:2px;
+  class templates,projects,today,scheduled storageItem;
+  style storage fill:#F5F5F2,stroke:#B8BAB4,color:#3E342C,stroke-width:2px;
 ```
 
 Scheduled tags can be an ISO date (`YYYY-MM-DD`), `daily`, `weekday`, `weekend`, or comma-separated weekday abbreviations (`mon` through `sun`). Dates before today and invalid tags are rejected. Processing a due date creates a Today entry and removes its Scheduled link; matching recurring rules create a Today entry while remaining scheduled.
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "13px"}, "flowchart": {"wrappingWidth": 200, "minNodeWidth": 0, "padding": 8}}}%%
 flowchart LR
-  entry["🔗 Scheduled entry"]
-  dueDate{"📅 Date due?"}
-  recurrenceMatch{"🔁 Rule matches today?"}
-  activateDate["🛠️ today.init adds Today link"]
-  removeDate["🗑️ Remove dated link"]
-  activateRecurring["🛠️ today.init adds Today link"]
-  keepScheduled["♻️ Keep Scheduled link"]
+  subgraph processing["🗓️ Scheduled entry processing"]
+    entry(["🔗 Scheduled entry"])
+    dueDate(["📅 Date due?"])
+    recurrenceMatch(["🔁 Rule matches today?"])
+    activateDate(["▶️ today.init adds Today link"])
+    removeDate(["🗑️ Remove dated link"])
+    activateRecurring(["▶️ today.init adds Today link"])
+    keepScheduled(["♻️ Keep Scheduled link"])
+  end
 
   entry -->|ISO date| dueDate
   entry -->|recurring tag| recurrenceMatch
@@ -130,6 +139,15 @@ flowchart LR
   recurrenceMatch -->|no| keepScheduled
   activateRecurring --> keepScheduled
 
+  classDef entry fill:#D6EAF8,stroke:#496F91,color:#3E342C,stroke-width:2px;
+  classDef condition fill:#FFE4A8,stroke:#936600,color:#3E342C,stroke-width:2px;
+  classDef action fill:#CDEEE4,stroke:#317C6B,color:#3E342C,stroke-width:2px;
+  classDef ongoing fill:#E3D1F2,stroke:#8050A1,color:#3E342C,stroke-width:2px;
+  class entry entry;
+  class dueDate,recurrenceMatch condition;
+  class activateDate,removeDate,activateRecurring action;
+  class keepScheduled ongoing;
+  style processing fill:#F5F5F2,stroke:#B8BAB4,color:#3E342C,stroke-width:2px;
 ```
 
 `today.init` avoids adding a duplicate Today link for a project already listed there. The `tdyia` alias runs schedule processing silently; `tdyl` lists Today entries.
@@ -196,4 +214,3 @@ The test covers dispatch/reflection, default directories, aliases, and the daily
 - [Zsh documentation](https://zsh.sourceforge.io/Doc/)
 - [Bash reference manual](https://www.gnu.org/software/bash/manual/)
 - [GNU Coreutils date invocation](https://www.gnu.org/software/coreutils/manual/html_node/date-invocation.html)
-
